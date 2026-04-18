@@ -6,6 +6,7 @@ import {
   Upload, CheckCircle, Clock, AlertTriangle, Plus,
   Bell, Briefcase, ImageIcon, X
 } from "lucide-react";
+import Link from "next/link";
 
 import LogShiftModal from "./LogShiftModal";
 import { fetchHistory } from "@/services/earnings.api";
@@ -43,7 +44,7 @@ function StatCard({ label, value, sub, Icon, iconBg, iconColor }) {
   );
 }
 
-function Header({ certLoading, onCertClick }) {
+function Header() {
   return (
     <header className="bg-white border-b border-slate-200 px-8 py-4 flex items-center justify-between">
       <div className="flex items-center gap-3">
@@ -54,14 +55,13 @@ function Header({ certLoading, onCertClick }) {
         <span className="font-bold text-slate-900 text-xl tracking-tight">FairGig</span>
       </div>
       <div className="flex items-center gap-4">
-        <button
-          onClick={onCertClick}
-          disabled={certLoading}
-          className="flex items-center gap-2 bg-teal-600 hover:bg-teal-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors"
+        <Link
+          href="/worker/history"
+          className="flex items-center gap-2 bg-teal-600 hover:bg-teal-700 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors"
         >
-          {certLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileText className="w-4 h-4" />}
-          {certLoading ? "Processing..." : "Generate Income Certificate"}
-        </button>
+          <FileText className="w-4 h-4" />
+          Generate Income Certificate
+        </Link>
         <button className="relative p-2 rounded-lg hover:bg-slate-100 text-slate-500 transition-colors">
           <Bell className="w-5 h-5" />
           <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
@@ -76,7 +76,6 @@ function Header({ certLoading, onCertClick }) {
 
 // ── Page ─────────────────────────────────────────────────────
 export default function WorkerDashboard() {
-  const [certLoading, setCertLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const [weeklyEarnings, setWeeklyEarnings] = useState([]);
@@ -112,7 +111,7 @@ export default function WorkerDashboard() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <Header certLoading={certLoading} onCertClick={() => { setCertLoading(true); setTimeout(() => setCertLoading(false), 2000); }} />
+      <Header />
 
       <main className="max-w-7xl mx-auto px-8 py-8">
         

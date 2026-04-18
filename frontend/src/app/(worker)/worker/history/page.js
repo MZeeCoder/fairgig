@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Filter, Loader2, Calendar, LayoutDashboard } from "lucide-react";
 import { fetchPlatforms, fetchWorkerDashboard } from "../../../../services/earnings.api";
+import { dashboardFilterSchema } from "@/schemas/worker.schema";
 import AnalyticsModal from "./AnalyticsModal";
 
 export default function HistoryPage() {
@@ -16,6 +17,7 @@ export default function HistoryPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [dashboardData, setDashboardData] = useState(null);
+  const [errors, setErrors] = useState({});
 
   useEffect(() => {
     const loadPlatforms = async () => {
@@ -31,8 +33,20 @@ export default function HistoryPage() {
 
   const handleGenerate = async (e) => {
     e.preventDefault();
-    if (startDate && endDate && new Date(startDate) > new Date(endDate)) {
-      alert("Start Date cannot be after End Date.");
+    setErrors({});
+
+    const validationResult = dashboardFilterSchema.safeParse({
+      platform: selectedPlatform,
+      startDate: startDate,
+      endDate: endDate,
+    });
+
+    if (!validationResult.success) {
+      const fieldErrors = {};
+      validationResult.error.issues.forEach(issue => {
+        fieldErrors[issue.path[0]] = issue.message;
+      });
+      setErrors(fieldErrors);
       return;
     }
 
@@ -68,15 +82,18 @@ export default function HistoryPage() {
             
             {/* Platform Selection */}
             <div className="space-y-2">
-              <label className="text-sm font-semibold text-slate-700 block">Platform</label>
+              <label className="text-sm font-semibold text-slate-700 block">Platform*</label>
               <div className="relative">
                 <Filter className="absolute left-3 top-3 w-5 h-5 text-slate-400" />
                 <select 
                   value={selectedPlatform}
-                  onChange={(e) => setSelectedPlatform(e.target.value)}
+                  onChange={(e) => {
+                    setSelectedPlatform(e.target.value);
+                    if (errors.platform) setErrors({ ...errors, platform: null });
+                  }}
                   className="w-full pl-10 pr-8 py-2.5 bg-white border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 appearance-none cursor-pointer"
                 >
-                  <option value="">All Platforms</option>
+                  <option value="">Select a Platform...</option>
                   {platforms.map((p, idx) => {
                     const pName = typeof p === 'string' ? p : p.name || p.platform;
                     return (
@@ -87,6 +104,7 @@ export default function HistoryPage() {
                   })}
                 </select>
               </div>
+              {errors.platform && <p className="text-xs text-red-500 mt-1">{errors.platform}</p>}
             </div>
 
             {/* Start Date */}
@@ -97,10 +115,14 @@ export default function HistoryPage() {
                 <input 
                   type="date"
                   value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
+                  onChange={(e) => {
+                    setStartDate(e.target.value);
+                    if (errors.startDate) setErrors({ ...errors, startDate: null });
+                  }}
                   className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
                 />
               </div>
+              {errors.startDate && <p className="text-xs text-red-500 mt-1">{errors.startDate}</p>}
             </div>
 
             {/* End Date */}
@@ -111,10 +133,14 @@ export default function HistoryPage() {
                 <input 
                   type="date"
                   value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
+                  onChange={(e) => {
+                    setEndDate(e.target.value);
+                    if (errors.endDate) setErrors({ ...errors, endDate: null });
+                  }}
                   className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
                 />
               </div>
+              {errors.endDate && <p className="text-xs text-red-500 mt-1">{errors.endDate}</p>}
             </div>
 
           </div>
@@ -133,7 +159,7 @@ export default function HistoryPage() {
               ) : (
                 <>
                   <LayoutDashboard className="w-5 h-5" />
-                  Generate Dashboard
+                Generate Income Certificate
                 </>
               )}
             </button>

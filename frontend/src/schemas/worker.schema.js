@@ -17,3 +17,17 @@ export const grievanceSchema = z.object({
   category: z.string().min(1, "Please select a category"),
   description: z.string().min(10, "Please provide more details (at least 10 characters)"),
 });
+
+export const dashboardFilterSchema = z.object({
+  platform: z.string().min(1, "Please select a platform"),
+  startDate: z.string().optional().or(z.literal("")),
+  endDate: z.string().optional().or(z.literal("")),
+}).refine((data) => {
+  if (data.startDate && data.endDate) {
+    return new Date(data.startDate) <= new Date(data.endDate);
+  }
+  return true;
+}, {
+  message: "Start Date cannot be after End Date.",
+  path: ["endDate"],
+});

@@ -1,133 +1,73 @@
 "use client";
 
-import { useState } from "react";
-import { Loader2, ShieldAlert, CheckCircle } from "lucide-react";
-import { grievanceSchema } from "@/schemas/worker.schema";
+import { useState, useEffect } from "react";
+import { Loader2, Plus } from "lucide-react";
+import { getUserGrievances } from "@/services/grievance.api";
+import GrievanceModal from "./GrievanceModal";
 
 export default function GrievancePage() {
-  const [isLoading, setIsLoading] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
-  
-  const [formData, setFormData] = useState({
-    platform: "",
-    category: "",
-    description: "",
-  });
-  
-  const [errors, setErrors] = useState({});
+  const [isFetching, setIsFetching] = useState(true);
+  const [grievances, setGrievances] = useState([]);
+  const [userId, setUserId] = useState(null);
+  const [fetchError, setFetchError] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-    if (errors[e.target.name]) setErrors({ ...errors, [e.target.name]: null });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setErrors({});
-
-    const validationResult = grievanceSchema.safeParse(formData);
-
-    if (!validationResult.success) {
-      const fieldErrors = {};
-      validationResult.error.issues.forEach(issue => {
-        fieldErrors[issue.path[0]] = issue.message;
-      });
-      setErrors(fieldErrors);
-      return;
+  useEffect(() => {
+    const token = localStorage.getItem("accessToken");
+    if (token) {
+      try {
+        const payloadStr = token.split(".")[1];
+        if (payloadStr) {
+          const payload = JSON.parse(atob(payloadStr));
+          if (payload && payload.userId) {
+            setUserId(payload.userId);
+            fetchGrievances(payload.userId);
+          }
+        }
+      } catch (err) {
+        console.error("Error decoding token:", err);
+      }
     }
+  }, []);
 
-    setIsLoading(true);
+  const fetchGrievances = async (id) => {
     try {
-      console.log("Submitting Grievance:", validationResult.data);
-      // Fake API call
-      await new Promise(r => setTimeout(r, 1500));
-      setSubmitted(true);
-      setFormData({ platform: "", category: "", description: "" });
-      setTimeout(() => setSubmitted(false), 4000);
+      setIsFetching(true);
+      const data = await getUserGrievances(id);
+      if (data?.data) { // Assuming data is wrapped in ApiResponse
+        setGrievances(data.data);
+      }
     } catch (err) {
-      console.error(err);
+      console.error("Failed to fetch grievances", err);
+      setFetchError("Could not load your past reports.");
     } finally {
-      setIsLoading(false);
+      setIsFetching(false);
     }
   };
 
   return (
     <main className="p-8 max-w-4xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-slate-900">File a Grievance</h1>
-        <p className="text-sm text-slate-500 mt-1">Report unfair practices, missing pay, or account issues. Advocates will review this.</p>
-      </div>
-
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-8">
-        <div className="flex items-center gap-2 mb-6 pb-4 border-b border-slate-100">
-          <ShieldAlert className="w-5 h-5 text-amber-500" />
-          <h2 className="text-base font-bold text-slate-900">New Report</h2>
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900">File a Grievance</h1>
+          <p className="text-sm text-slate-500 mt-1">Report unfair practices, missing pay, or account issues. Advocates will review this.</p>
         </div>
-
-        {submitted && (
-          <div className="mb-6 p-4 bg-teal-50 border border-teal-200 rounded-lg flex items-center gap-3">
-            <CheckCircle className="w-5 h-5 text-teal-600" />
-            <p className="text-sm text-teal-700 font-medium">Your grievance has been submitted securely to the Advocate team.</p>
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div className="grid grid-cols-2 gap-5">
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">Platform</label>
-              <input 
-                type="text" 
-                name="platform"
-                value={formData.platform}
-                onChange={handleChange}
-                placeholder="e.g., Foodpanda" 
-                className="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-teal-500 focus:border-teal-500 transition-all"
-              />
-              {errors.platform && <p className="text-xs text-red-500 mt-1">{errors.platform}</p>}
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">Category</label>
-              <select 
-                name="category"
-                value={formData.category}
-                onChange={handleChange}
-                className="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-1 focus:ring-teal-500 focus:border-teal-500 transition-all cursor-pointer"
-              >
-                <option value="">Select an issue...</option>
-                <option value="Unpaid Earnings">Unpaid Earnings</option>
-                <option value="Unfair Deductions">Unfair Deductions</option>
-                <option value="Sudden Deactivation">Sudden Account Deactivation</option>
-                <option value="Rate Cut">Secret Rate Cut</option>
-                <option value="Other">Other</option>
-              </select>
-              {errors.category && <p className="text-xs text-red-500 mt-1">{errors.category}</p>}
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1.5">Detailed Description</label>
-            <textarea 
-              name="description"
-              value={formData.description}
-              onChange={handleChange}
-              rows="4" 
-              placeholder="Please explain what happened in detail. Do not include your real name to remain anonymous."
-              className="w-full px-4 py-3 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-teal-500 focus:border-teal-500 transition-all resize-none"
-            ></textarea>
-            {errors.description && <p className="text-xs text-red-500 mt-1">{errors.description}</p>}
-          </div>
-
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="flex items-center justify-center gap-2 bg-teal-600 hover:bg-teal-700 disabled:opacity-70 text-white font-semibold py-2.5 px-6 rounded-lg transition-colors"
-          >
-            {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
-            {isLoading ? "Submitting..." : "Submit Report"}
-          </button>
-        </form>
+        <button
+          onClick={() => setIsModalOpen(true)}
+          className="flex items-center gap-2 bg-teal-600 hover:bg-teal-700 text-white font-semibold py-2.5 px-5 rounded-lg transition-colors shadow-sm"
+        >
+          <Plus className="w-5 h-5" />
+          New Report
+        </button>
       </div>
+
+      <GrievanceModal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+        onSuccess={() => {
+          if (userId) fetchGrievances(userId);
+        }} 
+      />
 
       {/* Past Reports Table */}
       <h3 className="text-sm font-bold text-slate-900 mb-3">Your Previous Reports</h3>
@@ -138,16 +78,60 @@ export default function GrievancePage() {
               <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Date</th>
               <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Platform</th>
               <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Category</th>
+              <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Description</th>
               <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Status</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            <tr className="hover:bg-slate-50">
-              <td className="px-6 py-4 text-sm text-slate-600">2025-07-01</td>
-              <td className="px-6 py-4 text-sm font-medium text-slate-900">Uber</td>
-              <td className="px-6 py-4 text-sm text-slate-600">Unfair Deductions</td>
-              <td className="px-6 py-4"><span className="text-xs font-medium bg-amber-50 text-amber-700 px-2.5 py-1 rounded-full border border-amber-200">Under Review</span></td>
-            </tr>
+            {isFetching ? (
+              [...Array(3)].map((_, i) => (
+                <tr key={i} className="animate-pulse">
+                  <td className="px-6 py-4">
+                    <div className="h-4 bg-slate-200 rounded w-24"></div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="h-4 bg-slate-200 rounded w-20"></div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="h-4 bg-slate-200 rounded w-32"></div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="h-4 bg-slate-200 rounded w-48"></div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="h-6 bg-slate-200 rounded-full w-24"></div>
+                  </td>
+                </tr>
+              ))
+            ) : fetchError ? (
+              <tr>
+                <td colSpan="5" className="px-6 py-4 text-center text-sm text-red-500">
+                  {fetchError}
+                </td>
+              </tr>
+            ) : grievances.length === 0 ? (
+              <tr>
+                <td colSpan="5" className="px-6 py-8 text-center text-sm text-slate-500">
+                  No grievances found.
+                </td>
+              </tr>
+            ) : (
+              grievances.map((g) => (
+                <tr key={g._id} className="hover:bg-slate-50">
+                  <td className="px-6 py-4 text-sm text-slate-600 truncate max-w-[100px]">
+                    {new Date(g.createdAt || Date.now()).toLocaleDateString()}
+                  </td>
+                  <td className="px-6 py-4 text-sm font-medium text-slate-900 truncate max-w-[120px]">{g.platform}</td>
+                  <td className="px-6 py-4 text-sm text-slate-600 truncate max-w-[150px]">{g.category}</td>
+                  <td className="px-6 py-4 text-sm text-slate-600 truncate max-w-[200px]" title={g.description}>{g.description || "N/A"}</td>
+                  <td className="px-6 py-4">
+                    <span className="text-xs font-medium bg-amber-50 text-amber-700 px-2.5 py-1 rounded-full border border-amber-200 whitespace-nowrap">
+                      {g.status || "Under Review"}
+                    </span>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
