@@ -28,6 +28,20 @@ export const fetchWorkerDashboard = async (params = {}) => {
     throw error;
   }
 };
+
+export const downloadWorkerDashboardPdf = async (params = {}) => {
+  try {
+    const res = await fastApi.get('/api/v1/earnings/analytics/worker-dashboard/pdf', {
+      params,
+      responseType: 'blob',
+    });
+    return res;
+  } catch (error) {
+    console.error("Download Worker Dashboard PDF Error:", error?.response?.data || error.message);
+    throw error;
+  }
+};
+
 export const fetchHistory = async () => {
   try {
     const res = await fastApi.get('/api/v1/earnings/history');

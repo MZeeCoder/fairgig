@@ -1,13 +1,17 @@
 import React from "react";
 import { X, Download, TrendingUp, DollarSign, Clock, MapPin } from "lucide-react";
 
-export default function AnalyticsModal({ isOpen, onClose, data, platform, startDate, endDate }) {
+export default function AnalyticsModal({
+  isOpen,
+  onClose,
+  data,
+  platform,
+  startDate,
+  endDate,
+  onDownloadPdf,
+  isDownloadingPdf = false,
+}) {
   if (!isOpen) return null;
-
-  const handleDownloadPdf = () => {
-    // Basic mock for PDF download since window.print or html2pdf is a complex client-side operation
-    alert("Mocking PDF download... This feature is under construction.");
-  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
@@ -151,11 +155,12 @@ export default function AnalyticsModal({ isOpen, onClose, data, platform, startD
             Close
           </button>
           <button 
-            onClick={handleDownloadPdf}
+            onClick={onDownloadPdf}
+            disabled={isDownloadingPdf}
             className="px-5 py-2.5 bg-teal-600 text-white rounded-lg text-sm font-medium hover:bg-teal-700 transition-colors flex items-center gap-2 shadow-sm"
           >
             <Download className="w-4 h-4" />
-            Download PDF
+            {isDownloadingPdf ? "Downloading..." : "Download PDF"}
           </button>
         </div>
       </div>

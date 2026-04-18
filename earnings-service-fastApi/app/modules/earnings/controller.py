@@ -1,13 +1,17 @@
 from datetime import date
+import logging
 
-from fastapi import Depends, Form, HTTPException, Query, Request
+from fastapi import Depends, Form, HTTPException, Query, Request, Response
 
 from app.middlewares import upload_single_image_middleware
+from app.modules.earnings.pdf_service import EarningsPdfService
 from app.modules.earnings.schemas import WorkerDashboardResponse, WorkerEarningsResponse
 from app.modules.earnings.service import EarningsService
 
 
 class EarningsController:
+    logger = logging.getLogger(__name__)
+
     @staticmethod
     async def create_earning(
         request: Request,
@@ -90,4 +94,43 @@ class EarningsController:
             platform=platform,
             start_date=start_date,
             end_date=end_date,
+        )
+
+    @staticmethod
+    async def download_worker_dashboard_pdf(
+        request: Request,
+        platform: str | None = Query(default=None),
+        start_date: date | None = Query(default=None),
+        end_date: date | None = Query(default=None),
+    ) -> Response:
+        worker_id = getattr(request.state, "worker_id", None)
+        if not worker_id:
+            raise HTTPException(status_code=401, detail="Unauthorized")
+
+        if start_date and end_date and start_date > end_date:
+            raise HTTPException(status_code=400, detail="start_date cannot be after end_date")
+
+        dashboard = await EarningsService.get_worker_dashboard(
+            worker_id=worker_id,
+            platform=platform,
+            start_date=start_date,
+            end_date=end_date,
+        )
+
+        try:
+            pdf_bytes = await EarningsPdfService.generate_worker_dashboard_pdf(
+                dashboard=dashboard,
+                platform=platform,
+                start_date=start_date.isoformat() if start_date else None,
+                end_date=end_date.isoformat() if end_date else None,
+            )
+        except Exception as exc:
+            EarningsController.logger.exception("Failed to generate worker dashboard PDF: %s", exc)
+            raise HTTPException(status_code=500, detail="Failed to generate PDF report") from exc
+
+        filename = "worker-dashboard-report.pdf"
+        return Response(
+            content=pdf_bytes,
+            media_type="application/pdf",
+            headers={"Content-Disposition": f'attachment; filename="{filename}"'},
         )

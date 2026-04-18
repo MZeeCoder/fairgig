@@ -2,7 +2,11 @@
 
 import { useState, useEffect } from "react";
 import { Filter, Loader2, Calendar, LayoutDashboard } from "lucide-react";
-import { fetchPlatforms, fetchWorkerDashboard } from "../../../../services/earnings.api";
+import {
+  downloadWorkerDashboardPdf,
+  fetchPlatforms,
+  fetchWorkerDashboard,
+} from "../../../../services/earnings.api";
 import { dashboardFilterSchema } from "@/schemas/worker.schema";
 import AnalyticsModal from "./AnalyticsModal";
 
@@ -15,6 +19,7 @@ export default function HistoryPage() {
   const [endDate, setEndDate] = useState("");
 
   const [isLoading, setIsLoading] = useState(false);
+  const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [dashboardData, setDashboardData] = useState(null);
   const [errors, setErrors] = useState({});
@@ -66,6 +71,36 @@ export default function HistoryPage() {
       alert("Failed to fetch analytics data.");
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleDownloadPdf = async () => {
+    setIsDownloadingPdf(true);
+    try {
+      const res = await downloadWorkerDashboardPdf({
+        platform: selectedPlatform || undefined,
+        start_date: startDate || undefined,
+        end_date: endDate || undefined,
+      });
+
+      const disposition = res.headers["content-disposition"] || "";
+      const filenameMatch = disposition.match(/filename=\"?([^\";]+)\"?/i);
+      const filename = filenameMatch?.[1] || "worker-dashboard-report.pdf";
+
+      const blob = new Blob([res.data], { type: "application/pdf" });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", filename);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Failed to download analytics PDF", error);
+      alert("Failed to download PDF report.");
+    } finally {
+      setIsDownloadingPdf(false);
     }
   };
 
@@ -175,6 +210,8 @@ export default function HistoryPage() {
           platform={selectedPlatform}
           startDate={startDate}
           endDate={endDate}
+          onDownloadPdf={handleDownloadPdf}
+          isDownloadingPdf={isDownloadingPdf}
         />
       )}
     </main>

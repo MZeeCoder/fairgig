@@ -8,3 +8,4 @@ python-dotenv
 cloudinary
 python-multipart
 PyJWT
+playwright
