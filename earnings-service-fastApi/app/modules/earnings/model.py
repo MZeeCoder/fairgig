@@ -17,6 +17,7 @@ class Earnings(Document):
     worker_id: PydanticObjectId = Field(description="Reference to User collection _id")
     platform: str = Field(min_length=1)
     city: str = Field(min_length=1)
+    city_zone: str = Field(min_length=1)
     date: date
     hours_worked: float = Field(ge=0)
     gross_earned: float = Field(ge=0)

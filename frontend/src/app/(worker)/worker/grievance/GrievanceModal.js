@@ -10,7 +10,6 @@ export default function GrievanceModal({ isOpen, onClose, onSuccess }) {
   const [formData, setFormData] = useState({
     platform: "",
     category: "",
-    customCategory: "",
     description: "",
   });
 
@@ -25,22 +24,12 @@ export default function GrievanceModal({ isOpen, onClose, onSuccess }) {
     e.preventDefault();
     setErrors({});
 
-    const payloadToValidate = {
-      ...formData,
-      category: formData.category === "Other" ? formData.customCategory : formData.category,
-    };
-
-    const validationResult = grievanceSchema.safeParse(payloadToValidate);
+    const validationResult = grievanceSchema.safeParse(formData);
 
     if (!validationResult.success) {
       const fieldErrors = {};
       validationResult.error.issues.forEach((issue) => {
-        const path = issue.path[0];
-        if (path === "category" && formData.category === "Other") {
-          fieldErrors.customCategory = issue.message;
-        } else {
-          fieldErrors[path] = issue.message;
-        }
+        fieldErrors[issue.path[0]] = issue.message;
       });
       setErrors(fieldErrors);
       return;
@@ -50,7 +39,7 @@ export default function GrievanceModal({ isOpen, onClose, onSuccess }) {
     try {
       await createGrievance(validationResult.data);
       setSubmitted(true);
-      setFormData({ platform: "", category: "", customCategory: "", description: "" });
+      setFormData({ platform: "", category: "", description: "" });
 
       if (onSuccess) onSuccess();
 
@@ -134,30 +123,16 @@ export default function GrievanceModal({ isOpen, onClose, onSuccess }) {
                       className="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm text-slate-900 bg-white focus:outline-none focus:ring-1 focus:ring-teal-500 focus:border-teal-500 transition-all cursor-pointer"
                     >
                       <option value="">Select an issue...</option>
-                      <option value="Unpaid Earnings">Unpaid Earnings</option>
-                      <option value="Unfair Deductions">Unfair Deductions</option>
-                      <option value="Sudden Deactivation">Sudden Account Deactivation</option>
-                      <option value="Rate Cut">Secret Rate Cut</option>
-                      <option value="Other">Other...</option>
+                      <option value="Unfair Deactivation">Unfair Deactivation</option>
+                      <option value="Commission Rate Change">Commission Rate Change</option>
+                      <option value="Incorrect Earnings Calculation">Incorrect Earnings Calculation</option>
+                      <option value="Payment Delay">Payment Delay</option>
+                      <option value="Safety & Harassment">Safety & Harassment</option>
+                      <option value="App / Technical Issue">App / Technical Issue</option>
+                      <option value="Other">Other</option>
                     </select>
-                    {errors.category && formData.category !== "Other" && (
+                    {errors.category && (
                       <p className="text-xs text-red-500 mt-1">{errors.category}</p>
-                    )}
-
-                    {formData.category === "Other" && (
-                      <div className="mt-3 animate-in fade-in slide-in-from-top-1 duration-200 block">
-                        <input
-                          type="text"
-                          name="customCategory"
-                          value={formData.customCategory}
-                          onChange={handleChange}
-                          placeholder="Please specify category"
-                          className="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm text-slate-900 focus:outline-none focus:ring-1 focus:ring-teal-500 focus:border-teal-500 transition-all"
-                        />
-                        {errors.customCategory && (
-                          <p className="text-xs text-red-500 mt-1">{errors.customCategory}</p>
-                        )}
-                      </div>
                     )}
                   </div>
                 </div>

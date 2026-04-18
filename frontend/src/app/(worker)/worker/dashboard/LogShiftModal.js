@@ -10,6 +10,7 @@ export default function LogShiftModal({ isOpen, onClose, onShiftAdded }) {
   const [formData, setFormData] = useState({
     platform: "",
     city: "",
+    city_zone: "",
     date: "",
     hours: "",
     gross: "",
@@ -63,6 +64,7 @@ export default function LogShiftModal({ isOpen, onClose, onShiftAdded }) {
       const data = new FormData();
       data.append("platform", formData.platform);
       data.append("city", formData.city);
+      data.append("city_zone", formData.city_zone);
       data.append("date", formData.date);
       data.append("hours_worked", formData.hours);
       data.append("gross_earned", formData.gross);
@@ -78,7 +80,7 @@ export default function LogShiftModal({ isOpen, onClose, onShiftAdded }) {
       }
 
       setSubmitted(true);
-      setFormData({ platform: "", city: "", date: "", hours: "", gross: "", deductions: "", net: "" }); 
+      setFormData({ platform: "", city: "", city_zone: "", date: "", hours: "", gross: "", deductions: "", net: "" }); 
       setScreenshotFile(null);
       
       setTimeout(() => {
@@ -145,6 +147,19 @@ export default function LogShiftModal({ isOpen, onClose, onShiftAdded }) {
                 
                 </datalist>
                 {errors.city && <p className="text-xs text-red-500 mt-1">{errors.city}</p>}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">City Zone</label>
+                <input 
+                  type="text"
+                  name="city_zone"
+                  value={formData.city_zone}
+                  onChange={handleChange}
+                  placeholder="E.g. Gulberg, DHA, Bahria Town..."
+                  className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm bg-white text-slate-900 focus:outline-none focus:ring-1 focus:ring-teal-500 focus:border-teal-500 transition-all"
+                />
+                {errors.city_zone && <p className="text-xs text-red-500 mt-1">{errors.city_zone}</p>}
               </div>
 
               <div className="grid grid-cols-2 gap-4">
