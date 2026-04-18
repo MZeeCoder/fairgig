@@ -4,6 +4,7 @@ from fastapi import FastAPI
 import uvicorn
 
 from app.config.db import connect_to_mongo
+from app.modules.anomaly_detection.route import anomaly_router
 from app.modules.earnings.route import earnings_router
 
 
@@ -15,6 +16,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 app.include_router(earnings_router)
+app.include_router(anomaly_router)
 
 
 @app.get("/")

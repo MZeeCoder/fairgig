@@ -1,4 +1,5 @@
 pydantic
+numpy
 fastapi
 uvicorn
 beanie<2
