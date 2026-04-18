@@ -14,7 +14,15 @@ const grievanceSchema = new mongoose.Schema(
     category: {
       type: String,
       required: true,
-      trim: true,
+      enum: [
+        "Unfair Deactivation",
+        "Commission Rate Change",
+        "Incorrect Earnings Calculation",
+        "Payment Delay",
+        "Safety & Harassment",
+        "App / Technical Issue",
+        "Other",
+      ],
     },
     platform: {
       type: String,
