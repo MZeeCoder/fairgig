@@ -2,6 +2,10 @@ import { Server } from "socket.io";
 import { config } from "../constants/config.js";
 
 let io;
+const frontendOrigin =
+  config.NODE_ENV === "production"
+    ? config.FRONTEND_URL_PRODUCTION
+    : config.FRONTEND_URL || "http://localhost:3000";
 
 export const initializeSocket = (httpServer) => {
   if (io) {
@@ -10,7 +14,7 @@ export const initializeSocket = (httpServer) => {
 
   io = new Server(httpServer, {
     cors: {
-      origin: config.FRONTEND_URL || "http://localhost:3000",
+      origin: frontendOrigin,
       credentials: true,
     },
   });

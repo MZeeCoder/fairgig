@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 
 from app.config.db import connect_to_mongo
+from app.constants.config import FRONTEND_URL, FRONTEND_URL_PRODUCTION, NODE_ENV
 from app.modules.anomaly_detection.route import anomaly_router
 from app.modules.earnings.route import earnings_router
 
@@ -17,9 +18,17 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
+cors_origins = [FRONTEND_URL]
+if NODE_ENV == "production":
+    cors_origins = [FRONTEND_URL_PRODUCTION]
+else:
+    cors_origins.extend([
+        "http://127.0.0.1:3000",
+    ])
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:3001", "http://127.0.0.1:3000", "http://127.0.0.1:3001"],
+    allow_origins=cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

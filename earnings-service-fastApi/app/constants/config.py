@@ -6,6 +6,11 @@ load_dotenv()
 
 MONGO_URI = getenv("MONGO_URI")
 MONGO_DB_NAME = getenv("MONGO_DB_NAME")
+NODE_ENV = getenv("NODE_ENV", "development")
+FRONTEND_URL = getenv("FRONTEND_URL", "http://localhost:3000")
+FRONTEND_URL_PRODUCTION = getenv(
+	"FRONTEND_URL_PRODUCTION", "https://fairgig-production.up.railway.app"
+)
 JWT_SECRET = getenv("JWT_SECRET")
 JWT_ALGORITHM = getenv("JWT_ALGORITHM", "HS256")
 
