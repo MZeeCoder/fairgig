@@ -18,3 +18,11 @@ class EarningsService:
         )
         await earning.insert()
         return earning
+
+    @staticmethod
+    async def get_worker_platforms(worker_id: str) -> list[str]:
+        platforms = await Earnings.get_motor_collection().distinct(
+            "platform",
+            {"worker_id": PydanticObjectId(worker_id)},
+        )
+        return sorted(platforms)

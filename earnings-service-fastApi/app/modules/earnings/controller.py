@@ -41,3 +41,15 @@ class EarningsController:
             "message": "Earning created successfully",
             "data": earning.model_dump(by_alias=True),
         }
+
+    @staticmethod
+    async def get_platforms(request: Request):
+        worker_id = getattr(request.state, "worker_id", None)
+        if not worker_id:
+            raise HTTPException(status_code=401, detail="Unauthorized")
+
+        platforms = await EarningsService.get_worker_platforms(worker_id)
+        return {
+            "message": "Platforms fetched successfully",
+            "data": platforms,
+        }
