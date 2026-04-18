@@ -40,7 +40,7 @@ const startServer = async () => {
     const io = initializeSocket(httpServer);
     app.set("io", io);
 
-    httpServer.listen(PORT, () => {
+    httpServer.listen(PORT,"0.0.0.0", () => {
       console.log(`Server is connected http://localhost:${PORT}`);
     });
   } catch (error) {
