@@ -12,7 +12,7 @@ import AnalyticsModal from "./AnalyticsModal";
 
 export default function HistoryPage() {
   const [platforms, setPlatforms] = useState([]);
-  
+
   // Form State
   const [selectedPlatform, setSelectedPlatform] = useState("");
   const [startDate, setStartDate] = useState("");
@@ -48,7 +48,7 @@ export default function HistoryPage() {
 
     if (!validationResult.success) {
       const fieldErrors = {};
-      validationResult.error.issues.forEach(issue => {
+      validationResult.error.issues.forEach((issue) => {
         fieldErrors[issue.path[0]] = issue.message;
       });
       setErrors(fieldErrors);
@@ -107,30 +107,38 @@ export default function HistoryPage() {
   return (
     <main className="p-8 max-w-4xl mx-auto">
       <div className="mb-10">
-        <h1 className="text-3xl font-bold text-slate-900">Analytics Dashboard</h1>
-        <p className="text-slate-500 mt-2">Generate and view your earnings analytics by filtering platform and date ranges.</p>
+        <h1 className="text-3xl font-bold text-slate-900">
+          Analytics Dashboard
+        </h1>
+        <p className="text-slate-500 mt-2">
+          Generate and view your earnings analytics by filtering platform and
+          date ranges.
+        </p>
       </div>
 
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden p-6 md:p-8">
         <form onSubmit={handleGenerate} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            
             {/* Platform Selection */}
             <div className="space-y-2">
-              <label className="text-sm font-semibold text-slate-700 block">Platform*</label>
+              <label className="text-sm font-semibold text-slate-700 block">
+                Platform*
+              </label>
               <div className="relative">
                 <Filter className="absolute left-3 top-3 w-5 h-5 text-slate-400" />
-                <select 
+                <select
                   value={selectedPlatform}
                   onChange={(e) => {
                     setSelectedPlatform(e.target.value);
-                    if (errors.platform) setErrors({ ...errors, platform: null });
+                    if (errors.platform)
+                      setErrors({ ...errors, platform: null });
                   }}
                   className="w-full pl-10 pr-8 py-2.5 bg-white border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 appearance-none cursor-pointer"
                 >
                   <option value="">Select a Platform...</option>
                   {platforms.map((p, idx) => {
-                    const pName = typeof p === 'string' ? p : p.name || p.platform;
+                    const pName =
+                      typeof p === "string" ? p : p.name || p.platform;
                     return (
                       <option key={idx} value={pName}>
                         {pName}
@@ -139,33 +147,42 @@ export default function HistoryPage() {
                   })}
                 </select>
               </div>
-              {errors.platform && <p className="text-xs text-red-500 mt-1">{errors.platform}</p>}
+              {errors.platform && (
+                <p className="text-xs text-red-500 mt-1">{errors.platform}</p>
+              )}
             </div>
 
             {/* Start Date */}
             <div className="space-y-2">
-              <label className="text-sm font-semibold text-slate-700 block">Start Date</label>
+              <label className="text-sm font-semibold text-slate-700 block">
+                Start Date
+              </label>
               <div className="relative">
                 <Calendar className="absolute left-3 top-3 w-5 h-5 text-slate-400" />
-                <input 
+                <input
                   type="date"
                   value={startDate}
                   onChange={(e) => {
                     setStartDate(e.target.value);
-                    if (errors.startDate) setErrors({ ...errors, startDate: null });
+                    if (errors.startDate)
+                      setErrors({ ...errors, startDate: null });
                   }}
                   className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
                 />
               </div>
-              {errors.startDate && <p className="text-xs text-red-500 mt-1">{errors.startDate}</p>}
+              {errors.startDate && (
+                <p className="text-xs text-red-500 mt-1">{errors.startDate}</p>
+              )}
             </div>
 
             {/* End Date */}
             <div className="space-y-2">
-              <label className="text-sm font-semibold text-slate-700 block">End Date</label>
+              <label className="text-sm font-semibold text-slate-700 block">
+                End Date
+              </label>
               <div className="relative">
                 <Calendar className="absolute left-3 top-3 w-5 h-5 text-slate-400" />
-                <input 
+                <input
                   type="date"
                   value={endDate}
                   onChange={(e) => {
@@ -175,13 +192,14 @@ export default function HistoryPage() {
                   className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
                 />
               </div>
-              {errors.endDate && <p className="text-xs text-red-500 mt-1">{errors.endDate}</p>}
+              {errors.endDate && (
+                <p className="text-xs text-red-500 mt-1">{errors.endDate}</p>
+              )}
             </div>
-
           </div>
 
           <div className="pt-4 flex justify-end">
-            <button 
+            <button
               type="submit"
               disabled={isLoading}
               className="flex items-center gap-2 bg-teal-600 text-white hover:bg-teal-700 font-medium px-6 py-3 rounded-xl transition-colors disabled:opacity-70 disabled:cursor-not-allowed shadow-sm"
@@ -194,7 +212,7 @@ export default function HistoryPage() {
               ) : (
                 <>
                   <LayoutDashboard className="w-5 h-5" />
-                Generate Income Certificate
+                  Generate Income Certificate
                 </>
               )}
             </button>
@@ -203,7 +221,7 @@ export default function HistoryPage() {
       </div>
 
       {isModalOpen && dashboardData && (
-        <AnalyticsModal 
+        <AnalyticsModal
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
           data={dashboardData}
