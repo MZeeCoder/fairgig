@@ -214,7 +214,7 @@ export default function WorkerDashboard() {
             <table className="w-full">
               <thead>
                 <tr className="bg-slate-50 border-b border-slate-200">
-                  {["Date", "Platform", "Hours", "Gross", "Deductions", "Net Earned", "Status", "Proof"].map((h) => (
+                  {["Date", "Platform", "City", "Hours", "Gross", "Deductions", "Net Earned", "Status", "Proof"].map((h) => (
                     <th key={h} className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">{h}</th>
                   ))}
                 </tr>
@@ -244,6 +244,7 @@ export default function WorkerDashboard() {
                   <tr key={log._id || log.id} className="hover:bg-slate-50 transition-colors">
                     <td className="px-6 py-4 text-sm text-slate-600">{log.date}</td>
                     <td className="px-6 py-4 text-sm font-medium text-slate-900">{log.platform}</td>
+                    <td className="px-6 py-4 text-sm text-slate-600">{log.city || 'Unspecified'}</td>
                     <td className="px-6 py-4 text-sm text-slate-600">{log.hours_worked || log.hours}h</td>
                     <td className="px-6 py-4 text-sm text-slate-600">PKR {(log.gross_earned || log.gross || 0).toLocaleString()}</td>
                     <td className="px-6 py-4 text-sm text-slate-500">PKR {(log.deduction || log.deductions || 0).toLocaleString()}</td>

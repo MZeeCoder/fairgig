@@ -21,6 +21,7 @@ class VerifierService {
       return {
         id: doc._id.toString(),
         platform: doc.platform,
+        city: doc.city || 'unspecified',
         date: docDate,
         hours: doc.hours_worked,
         gross: doc.gross_earned,
@@ -58,6 +59,7 @@ class VerifierService {
         _id: doc._id.toString(),
         worker_id: doc.worker_id ? doc.worker_id.toString() : "",
         platform: doc.platform,
+        city: doc.city || 'unspecified',
         date: docDate,
         hours_worked: doc.hours_worked,
         gross_earned: doc.gross_earned,

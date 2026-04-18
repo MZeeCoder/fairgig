@@ -2,6 +2,7 @@ import { z } from "zod";
 
 export const shiftSchema = z.object({
   platform: z.string().min(1, "Platform is required"),
+  city: z.string().min(1, "City is extremely important and required"),
   date: z.string().min(1, "Date is required"),
   hours: z.string().min(1, "Hours are required"),
   gross: z.string().min(1, "Gross earnings are required"),

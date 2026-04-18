@@ -37,6 +37,7 @@ class WorkerEarningItem(BaseModel):
     id: str
     worker_id: str
     platform: str
+    city: str
     date: date
     hours_worked: float
     gross_earned: float

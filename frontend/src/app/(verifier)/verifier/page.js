@@ -124,8 +124,10 @@ export default function VerifierQueuePage() {
                       <div>
                         <p className="text-xs text-slate-500 mb-1 flex items-center gap-1">Platform</p>
                         <p className="font-bold text-slate-900">{selectedShift.platform}</p>
-                      </div>
-                      <div>
+                      </div>                    <div>
+                        <p className="text-xs text-slate-500 mb-1 flex items-center gap-1">City</p>
+                        <p className="font-bold text-slate-900">{selectedShift.city || 'Unspecified'}</p>
+                    </div>                      <div>
                         <p className="text-xs text-slate-500 mb-1 flex items-center gap-1"><Calendar className="w-3 h-3"/> Date</p>
                         <p className="font-semibold text-slate-700">{selectedShift.date}</p>
                       </div>

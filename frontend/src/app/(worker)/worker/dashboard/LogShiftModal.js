@@ -9,6 +9,7 @@ export default function LogShiftModal({ isOpen, onClose, onShiftAdded }) {
 
   const [formData, setFormData] = useState({
     platform: "",
+    city: "",
     date: "",
     hours: "",
     gross: "",
@@ -61,6 +62,7 @@ export default function LogShiftModal({ isOpen, onClose, onShiftAdded }) {
     try {
       const data = new FormData();
       data.append("platform", formData.platform);
+      data.append("city", formData.city);
       data.append("date", formData.date);
       data.append("hours_worked", formData.hours);
       data.append("gross_earned", formData.gross);
@@ -76,7 +78,7 @@ export default function LogShiftModal({ isOpen, onClose, onShiftAdded }) {
       }
 
       setSubmitted(true);
-      setFormData({ platform: "", date: "", hours: "", gross: "", deductions: "", net: "" }); 
+      setFormData({ platform: "", city: "", date: "", hours: "", gross: "", deductions: "", net: "" }); 
       setScreenshotFile(null);
       
       setTimeout(() => {
@@ -127,6 +129,22 @@ export default function LogShiftModal({ isOpen, onClose, onShiftAdded }) {
                   <option value="Bykea">Bykea</option>
                 </select>
                 {errors.platform && <p className="text-xs text-red-500 mt-1">{errors.platform}</p>}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">City</label>
+                <input 
+                  list="pakistan-cities"
+                  name="city"
+                  value={formData.city}
+                  onChange={handleChange}
+                  placeholder="Search or type a city..."
+                  className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm bg-white text-slate-900 focus:outline-none focus:ring-1 focus:ring-teal-500 focus:border-teal-500 transition-all"
+                />
+                <datalist id="pakistan-cities">
+                
+                </datalist>
+                {errors.city && <p className="text-xs text-red-500 mt-1">{errors.city}</p>}
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -198,17 +216,32 @@ export default function LogShiftModal({ isOpen, onClose, onShiftAdded }) {
               {/* File Upload */}
               <div className="pt-2">
                 <label className="block text-sm font-medium text-slate-700 mb-1.5">Screenshot Proof</label>
-                <label className={`flex flex-col items-center justify-center w-full h-24 border-2 border-dashed ${errors.file ? 'border-red-400 bg-red-50' : 'border-slate-300 hover:border-teal-500 hover:bg-teal-50'} rounded-lg cursor-pointer transition-colors group bg-slate-50`}>
-                  {screenshotFile ? (
-                    <span className="text-sm font-medium text-teal-700">{screenshotFile.name} selected</span>
-                  ) : (
-                    <>
-                      <Upload className="w-5 h-5 text-slate-400 group-hover:text-teal-600 mb-2" />
-                      <span className="text-xs text-slate-500 group-hover:text-teal-700 font-medium">Click to upload earnings screenshot</span>
-                    </>
+                <div className="relative">
+                  <label className={`flex flex-col items-center justify-center w-full h-24 border-2 border-dashed ${errors.file ? 'border-red-400 bg-red-50' : 'border-slate-300 hover:border-teal-500 hover:bg-teal-50'} rounded-lg cursor-pointer transition-colors group bg-slate-50`}>
+                    {screenshotFile ? (
+                      <span className="text-sm font-medium text-teal-700">{screenshotFile.name} selected</span>
+                    ) : (
+                      <>
+                        <Upload className="w-5 h-5 text-slate-400 group-hover:text-teal-600 mb-2" />
+                        <span className="text-xs text-slate-500 group-hover:text-teal-700 font-medium">Click to upload earnings screenshot</span>
+                      </>
+                    )}
+                    <input type="file" className="hidden" accept="image/*" onChange={handleFileChange} />
+                  </label>
+                  {screenshotFile && (
+                    <button
+                      type="button"
+                      title="Remove image"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setScreenshotFile(null);
+                      }}
+                      className="absolute top-2 right-2 p-1.5 bg-white rounded-full text-red-500 hover:bg-red-50 hover:text-red-700 transition border border-slate-200 shadow-sm"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
                   )}
-                  <input type="file" className="hidden" accept="image/*" onChange={handleFileChange} />
-                </label>
+                </div>
                 {errors.file && <p className="text-xs text-red-500 mt-1.5">{errors.file}</p>}
               </div>
 

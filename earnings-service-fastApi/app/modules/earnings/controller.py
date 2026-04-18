@@ -16,6 +16,7 @@ class EarningsController:
     async def create_earning(
         request: Request,
         platform: str = Form(...),
+        city: str = Form(...),
         date_value: date = Form(..., alias="date"),
         hours_worked: float = Form(...),
         gross_earned: float = Form(...),
@@ -33,6 +34,7 @@ class EarningsController:
         payload = {
             "worker_id": worker_id,
             "platform": platform,
+            "city": city,
             "date": date_value,
             "hours_worked": hours_worked,
             "gross_earned": gross_earned,
