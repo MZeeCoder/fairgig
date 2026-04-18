@@ -1,0 +1,33 @@
+# Node.js / npm
+node_modules/
+package-lock.json
+npm-debug.log*
+npm-registry-bundle.log*
+npm-shrinkwrap.json*
+.npm
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Coverage / testing
+coverage/
+.nyc_output/
+
+# IDE / editor files
+.vscode/
+.idea/
+*.swp
+*~
+.DS_Store
+
+# Build / dist output (if any)
+/dist
+/build
+/output
