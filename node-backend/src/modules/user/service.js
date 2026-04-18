@@ -12,6 +12,7 @@ class UserService {
 
     const user = await User.create({
       name: payload.name,
+      email: payload.email,
       password: payload.password,
       role: payload.role,
       phone: payload.phone,

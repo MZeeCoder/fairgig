@@ -1,0 +1,11 @@
+POST http://localhost:5000/api/v1/users/signup
+Content-Type: application/json
+
+{
+    "name": "Salman Rafiq",
+    "email": "salman@example.com",
+    "password": "salman123",
+    "phone": "03247432629",
+    "city": "okara",
+    "platforms": ["foodpanda", "uber"]
+}

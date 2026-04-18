@@ -46,7 +46,7 @@ const uploadToCloudinary = (fileBuffer, folder) => {
   });
 };
 
-export const uploadVerificationDocuments = [
+export const uploadDocuments = [
   multerUpload.array("verificationDocuments", 10),
   async (req, res, next) => {
     try {
