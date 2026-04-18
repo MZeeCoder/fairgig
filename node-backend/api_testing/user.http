@@ -9,3 +9,12 @@ Content-Type: application/json
     "city": "okara",
     "platforms": ["foodpanda", "uber"]
 }
+
+
+POST http://localhost:5000/api/v1/users/login
+Content-Type: application/json
+
+{
+    "email": "salman@example.com",
+    "password": "salman123"
+}

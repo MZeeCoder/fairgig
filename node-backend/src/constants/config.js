@@ -12,6 +12,8 @@ export const config = {
   MONGO_URI: process.env.MONGO_URI,
 };
 
+export const REFRESH_TOKEN_COOKIE_AGE = 30 * 24 * 60 * 60 * 1000;
+
 export const configInit = async () => {
   return config;
 };

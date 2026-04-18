@@ -10,7 +10,7 @@ cloudinary.config({
 
 const storage = multer.memoryStorage();
 
-const imageMimeTypes = ["image/jpeg", "image/png", "image/webp", "image/jpg"];
+const mimeTypes = ["image/jpeg", "image/png", "image/webp", "image/jpg"];
 
 const multerUpload = multer({
   storage,
@@ -18,7 +18,7 @@ const multerUpload = multer({
     fileSize: 5 * 1024 * 1024,
   },
   fileFilter: (req, file, cb) => {
-    if (!imageMimeTypes.includes(file.mimetype)) {
+    if (!mimeTypes.includes(file.mimetype)) {
       cb(new Error("Only image files are allowed"));
       return;
     }
