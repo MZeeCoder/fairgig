@@ -10,6 +10,23 @@ export const submitShiftLog = async (formData) => {
   }
 };
 
+export const bulkUploadEarnings = async (file) => {
+  try {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const res = await fastApi.post("/api/v1/earnings/bulk-upload", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return res.data;
+  } catch (error) {
+    console.error("Bulk Upload Error:", error?.response?.data || error.message);
+    throw error;
+  }
+};
+
 export const detectAnomaly = async (newEarningId) => {
   try {
     const res = await fastApi.post("/anomaly/detect", {

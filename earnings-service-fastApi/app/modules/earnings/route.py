@@ -12,6 +12,10 @@ earnings_router.post("/", dependencies=[Depends(authenticate_access_token)])(
     EarningsController.create_earning
 )
 
+earnings_router.post("/bulk-upload", dependencies=[Depends(authenticate_access_token)])(
+    EarningsController.bulk_upload_earnings
+)
+
 earnings_router.get("/analytics/platforms", dependencies=[Depends(authenticate_access_token)])(
     EarningsController.get_platforms
 )

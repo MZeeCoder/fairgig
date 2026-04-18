@@ -23,6 +23,8 @@ class EarningsService:
         earning = Earnings(
             worker_id=PydanticObjectId(payload["worker_id"]),
             platform=payload["platform"],
+            city=payload["city"],
+            city_zone=payload.get("city_zone", "Unknown"),
             date=payload["date"],
             hours_worked=payload["hours_worked"],
             gross_earned=payload["gross_earned"],
@@ -30,9 +32,34 @@ class EarningsService:
             net_received=payload["net_received"],
             screenshot_url=payload["screenshot_url"],
             anomaly_explanation=payload.get("anomaly_explanation"),
+            status=payload.get("status", "pending")
         )
         await earning.insert()
         return earning
+
+    @staticmethod
+    async def bulk_create_earnings(payloads: list[dict]) -> list[Earnings]:
+        earnings_list = []
+        for payload in payloads:
+            earnings_list.append(
+                Earnings(
+                    worker_id=PydanticObjectId(payload["worker_id"]),
+                    platform=payload["platform"],
+                    city=payload["city"],
+                    city_zone=payload.get("city_zone", "Unknown"),
+                    date=payload["date"],
+                    hours_worked=payload["hours_worked"],
+                    gross_earned=payload["gross_earned"],
+                    deduction=payload["deduction"],
+                    net_received=payload["net_received"],
+                    screenshot_url=payload["screenshot_url"],
+                    anomaly_explanation=payload.get("anomaly_explanation"),
+                    status=payload.get("status", "pending")
+                )
+            )
+        if earnings_list:
+            await Earnings.insert_many(earnings_list)
+        return earnings_list
 
     @staticmethod
     async def get_worker_platforms(worker_id: str) -> list[str]:
@@ -48,6 +75,8 @@ class EarningsService:
             id=str(document.get("_id", "")),
             worker_id=str(document.get("worker_id", "")),
             platform=str(document.get("platform", "")),
+            city=str(document.get("city", "")),
+            city_zone=str(document.get("city_zone", "")),
             date=document.get("date"),
             hours_worked=float(document.get("hours_worked", 0.0) or 0.0),
             gross_earned=float(document.get("gross_earned", 0.0) or 0.0),
@@ -113,13 +142,12 @@ class EarningsService:
         if not city_zone:
             return 0.0
 
-        match_filter: dict = {
-            "worker_id": {"$ne": worker_object_id},
+        base_match_filter: dict = {
             "city_zone": city_zone,
         }
 
         if platform:
-            match_filter["platform"] = platform
+            base_match_filter["platform"] = platform
 
         if start_date or end_date:
             date_filter: dict = {}
@@ -127,7 +155,11 @@ class EarningsService:
                 date_filter["$gte"] = datetime.combine(start_date, datetime.min.time())
             if end_date:
                 date_filter["$lte"] = datetime.combine(end_date, datetime.max.time())
-            match_filter["date"] = date_filter
+            base_match_filter["date"] = date_filter
+
+        # Try calculating median excluding the current worker first
+        match_filter = base_match_filter.copy()
+        match_filter["worker_id"] = {"$ne": worker_object_id}
 
         pipeline = [
             {"$match": match_filter},
@@ -140,7 +172,23 @@ class EarningsService:
             {"$project": {"_id": 0, "worker_avg_net": 1}},
         ]
 
-        docs = await Earnings.get_motor_collection().aggregate(pipeline).to_list(length=None)
+        collection = Earnings.get_motor_collection()
+        docs = await collection.aggregate(pipeline).to_list(length=None)
+        
+        # Fallback: if no other workers exist, use all workers (which means just this worker)
+        if not docs:
+            fallback_pipeline = [
+                {"$match": base_match_filter},
+                {
+                    "$group": {
+                        "_id": "$worker_id",
+                        "worker_avg_net": {"$avg": "$net_received"},
+                    }
+                },
+                {"$project": {"_id": 0, "worker_avg_net": 1}},
+            ]
+            docs = await collection.aggregate(fallback_pipeline).to_list(length=None)
+
         values = sorted(
             float(item.get("worker_avg_net", 0.0))
             for item in docs
@@ -314,9 +362,14 @@ class EarningsService:
         )
 
         user_avg_net = float(summary_doc.get("user_avg_net", 0.0) or 0.0)
+        
+        # Determine Benchmark Status
+        # If city median relies strictly on this single user so they perfectly match, we can say "Average" or "On Par"
         if city_median == 0:
             benchmark_status = "No benchmark data"
-        elif user_avg_net >= city_median:
+        elif user_avg_net == city_median:
+            benchmark_status = "Average"
+        elif user_avg_net > city_median:
             benchmark_status = "Above Average"
         else:
             benchmark_status = "Below Average"

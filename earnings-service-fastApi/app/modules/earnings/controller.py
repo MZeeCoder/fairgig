@@ -1,7 +1,9 @@
 from datetime import date
 import logging
+import csv
+import io
 
-from fastapi import Depends, Form, HTTPException, Query, Request, Response
+from fastapi import Depends, File, Form, HTTPException, Query, Request, Response, UploadFile
 
 from app.middlewares import upload_single_image_middleware
 from app.modules.earnings.pdf_service import EarningsPdfService
@@ -49,6 +51,80 @@ class EarningsController:
         return {
             "message": "Earning created successfully",
             "data": earning.model_dump(by_alias=True),
+        }
+
+    @staticmethod
+    async def bulk_upload_earnings(
+        request: Request,
+        file: UploadFile = File(...),
+    ):
+        worker_id = getattr(request.state, "worker_id", None)
+        if not worker_id:
+            raise HTTPException(status_code=401, detail="Unauthorized")
+
+        if not file.filename.endswith(".csv"):
+            raise HTTPException(status_code=400, detail="Invalid file type. Must be a .csv file.")
+
+        content = await file.read()
+        try:
+            text = content.decode("utf-8")
+        except UnicodeDecodeError:
+            raise HTTPException(status_code=400, detail="File could not be decoded. Ensure it is UTF-8 encoded.")
+
+        reader = csv.DictReader(io.StringIO(text))
+        
+        required_fields = {
+            "platform", "city", "city_zone", "date", "hours_worked", "gross_earned", 
+            "deduction", "net_received", "screenshot_url"
+        }
+        
+        # Verify columns exist
+        if not reader.fieldnames:
+            raise HTTPException(status_code=400, detail="CSV file is empty or missing headers.")
+        
+        missing_fields = required_fields - set(reader.fieldnames)
+        if missing_fields:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"CSV is missing required columns: {', '.join(missing_fields)}"
+            )
+
+        payloads = []
+        for row_index, row in enumerate(reader, start=1):
+            try:
+                payload = {
+                    "worker_id": worker_id,
+                    "platform": row["platform"].strip(),
+                    "city": row["city"].strip(),
+                    "city_zone": row["city_zone"].strip(),
+                    "date": date.fromisoformat(row["date"].strip()),
+                    "hours_worked": float(row["hours_worked"].strip()),
+                    "gross_earned": float(row["gross_earned"].strip()),
+                    "deduction": float(row["deduction"].strip()),
+                    "net_received": float(row["net_received"].strip()),
+                    "screenshot_url": row["screenshot_url"].strip(),
+                    "status": row.get("status", "pending").strip(),
+                }
+                
+                # Check for empty screenshot_url
+                if not payload["screenshot_url"]:
+                     raise ValueError("screenshot_url cannot be empty")
+
+                payloads.append(payload)
+            except Exception as e:
+                raise HTTPException(
+                    status_code=400, 
+                    detail=f"Invalid data at row {row_index}: {str(e)}"
+                )
+
+        if not payloads:
+             raise HTTPException(status_code=400, detail="No data rows found in the CSV.")
+
+        # Create earnings in bulk
+        await EarningsService.bulk_create_earnings(payloads)
+
+        return {
+            "message": f"Successfully uploaded {len(payloads)} earnings records",
         }
 
     @staticmethod

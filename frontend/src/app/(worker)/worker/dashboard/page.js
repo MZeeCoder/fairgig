@@ -2,14 +2,29 @@
 
 import { useState, useEffect } from "react";
 import {
-  DollarSign, TrendingUp, Layers, FileText, Loader2,
-  Upload, CheckCircle, Clock, AlertTriangle, Plus,
-  Bell, Briefcase, ImageIcon, X
+  DollarSign,
+  TrendingUp,
+  Layers,
+  FileText,
+  Loader2,
+  Upload,
+  CheckCircle,
+  Clock,
+  AlertTriangle,
+  Plus,
+  Bell,
+  Briefcase,
+  ImageIcon,
+  X,
 } from "lucide-react";
 import Link from "next/link";
 
 import LogShiftModal from "./LogShiftModal";
-import { detectAnomaly, fetchHistory } from "@/services/earnings.api";
+import {
+  detectAnomaly,
+  fetchHistory,
+  bulkUploadEarnings,
+} from "@/services/earnings.api";
 
 // ── Mock Data ────────────────────────────────────────────────
 // The mock data has been removed to prepare for API integration.
@@ -17,8 +32,8 @@ import { detectAnomaly, fetchHistory } from "@/services/earnings.api";
 // ── Sub-components ───────────────────────────────────────────
 const statusStyles = {
   Confirmed: "bg-teal-50 text-teal-700 border border-teal-200",
-  Pending:   "bg-amber-50 text-amber-700 border border-amber-200",
-  Flagged:   "bg-red-50 text-red-700 border border-red-200",
+  Pending: "bg-amber-50 text-amber-700 border border-amber-200",
+  Flagged: "bg-red-50 text-red-700 border border-red-200",
 };
 
 const StatusIcon = ({ status }) => {
@@ -36,7 +51,9 @@ function StatCard({ label, value, sub, Icon, iconBg, iconColor }) {
           <p className="text-2xl font-bold text-slate-900 mb-1">{value}</p>
           <p className={`text-xs font-medium ${iconColor}`}>{sub}</p>
         </div>
-        <div className={`w-12 h-12 rounded-xl ${iconBg} flex items-center justify-center`}>
+        <div
+          className={`w-12 h-12 rounded-xl ${iconBg} flex items-center justify-center`}
+        >
           <Icon className={`w-6 h-6 ${iconColor}`} />
         </div>
       </div>
@@ -52,7 +69,9 @@ function Header() {
         <div className="w-10 h-10 rounded-xl bg-teal-600 flex items-center justify-center shadow-sm">
           <Briefcase className="w-5 h-5 text-white" />
         </div>
-        <span className="font-bold text-slate-900 text-xl tracking-tight">FairGig</span>
+        <span className="font-bold text-slate-900 text-xl tracking-tight">
+          FairGig
+        </span>
       </div>
       <div className="flex items-center gap-4">
         <Link
@@ -83,6 +102,8 @@ export default function WorkerDashboard() {
   const [isLogsLoading, setIsLogsLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState(null);
   const [anomalyNotice, setAnomalyNotice] = useState(null);
+  const [uploadError, setUploadError] = useState("");
+  const [uploadSuccess, setUploadSuccess] = useState("");
 
   useEffect(() => {
     // Fetch History Data
@@ -101,7 +122,7 @@ export default function WorkerDashboard() {
         setIsLogsLoading(false);
       }
     };
-    
+
     loadData();
   }, []);
 
@@ -139,12 +160,50 @@ export default function WorkerDashboard() {
       });
   };
 
+  const handleBulkUpload = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setUploadError("");
+    setUploadSuccess("");
+
+    if (!file.name.endsWith(".csv")) {
+      setUploadError("Please upload a valid CSV file.");
+      return;
+    }
+
+    try {
+      setUploadSuccess("Uploading file, please wait...");
+
+      const response = await bulkUploadEarnings(file);
+
+      setUploadSuccess(`Success: ${response.message || "File uploaded."}`);
+
+      // Refresh history logic to see new entries immediately
+      const res = await fetchHistory();
+      if (res && res.items) {
+        setShiftLogs(res.items);
+      } else if (Array.isArray(res)) {
+        setShiftLogs(res);
+      }
+    } catch (error) {
+      setUploadError(
+        error?.response?.data?.detail ||
+          error.message ||
+          "Something went wrong while uploading the file.",
+      );
+      setUploadSuccess(""); // clear the uploading message
+    }
+
+    // Reset input value so the same file can be selected again if needed
+    event.target.value = null;
+  };
+
   return (
     <div className="min-h-screen bg-slate-50">
       <Header />
 
       <main className="max-w-7xl mx-auto px-8 py-8">
-
         {anomalyNotice && (
           <div className="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-4 text-red-900 shadow-sm flex items-start justify-between gap-4">
             <div className="flex items-start gap-3">
@@ -155,7 +214,9 @@ export default function WorkerDashboard() {
                 <p className="text-sm font-semibold uppercase tracking-wide text-red-700">
                   Anomaly detected
                 </p>
-                <p className="mt-1 text-sm text-red-800">{anomalyNotice.message}</p>
+                <p className="mt-1 text-sm text-red-800">
+                  {anomalyNotice.message}
+                </p>
               </div>
             </div>
             <button
@@ -168,10 +229,62 @@ export default function WorkerDashboard() {
             </button>
           </div>
         )}
-        
+
+        {uploadError && (
+          <div className="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-4 text-red-900 shadow-sm flex items-start justify-between gap-4">
+            <div className="flex items-start gap-3">
+              <div className="mt-0.5 flex h-8 w-8 items-center justify-center rounded-full bg-red-100 text-red-600">
+                <AlertTriangle className="h-4 w-4" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold uppercase tracking-wide text-red-700">
+                  Upload Error
+                </p>
+                <p className="mt-1 text-sm text-red-800">{uploadError}</p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setUploadError("")}
+              className="rounded-full p-2 text-red-500 transition-colors hover:bg-red-100 hover:text-red-700"
+              aria-label="Dismiss error"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        )}
+
+        {uploadSuccess && (
+          <div className="mb-6 rounded-xl border border-teal-200 bg-teal-50 px-4 py-4 text-teal-900 shadow-sm flex items-start justify-between gap-4">
+            <div className="flex items-start gap-3">
+              <div className="mt-0.5 flex h-8 w-8 items-center justify-center rounded-full bg-teal-100 text-teal-600">
+                <CheckCircle className="h-4 w-4" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold uppercase tracking-wide text-teal-700">
+                  File Ready
+                </p>
+                <p className="mt-1 text-sm text-teal-800">{uploadSuccess}</p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setUploadSuccess("")}
+              className="rounded-full p-2 text-teal-500 transition-colors hover:bg-teal-100 hover:text-teal-700"
+              aria-label="Dismiss message"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        )}
+
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-slate-900 mb-1">Good morning, Ali 👋</h1>
-          <p className="text-sm text-slate-500">Here is your earnings overview for this week.</p>
+          <h1 className="text-2xl font-bold text-slate-900 mb-1">
+            Good morning, Ali 👋
+          </h1>
+          <p className="text-sm text-slate-500">
+            Here is your earnings overview for this week.
+          </p>
         </div>
 
         <LogShiftModal
@@ -180,32 +293,44 @@ export default function WorkerDashboard() {
           onShiftAdded={handleShiftAdded}
         />
 
-        
-
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 mb-8">
-          
           {/* Action Card triggering Log Shift Modal */}
           <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200 shadow-sm p-6 flex flex-col justify-center items-center text-center">
             <div className="w-16 h-16 bg-teal-50 rounded-full flex items-center justify-center mb-4">
               <Upload className="w-8 h-8 text-teal-600" />
             </div>
-            <h2 className="text-lg font-bold text-slate-900 mb-2">Record Your Earnings</h2>
-            <p className="text-sm text-slate-500 mb-6">Log your completed shifts to track income and view analytics.</p>
-            <button
-              onClick={() => setIsModalOpen(true)}
-              className="w-full flex items-center justify-center gap-2 bg-teal-600 hover:bg-teal-700 text-white font-semibold py-3 px-4 rounded-xl transition-colors shadow-sm"
-            >
-              <Plus className="w-5 h-5" /> Log New Shift
-            </button>
+            <h2 className="text-lg font-bold text-slate-900 mb-2">
+              Record Your Earnings
+            </h2>
+            <p className="text-sm text-slate-500 mb-6">
+              Log your completed shifts to track income and view analytics.
+            </p>
+            <div className="flex gap-4 w-full">
+              <button
+                onClick={() => setIsModalOpen(true)}
+                className="flex-1 flex items-center justify-center gap-2 bg-teal-600 hover:bg-teal-700 text-white font-semibold py-3 px-4 rounded-xl transition-colors shadow-sm"
+              >
+                <Plus className="w-5 h-5" /> Log New Shift
+              </button>
+              <label className="flex-1 flex items-center justify-center gap-2 bg-white border-2 border-slate-200 hover:border-teal-600 text-slate-700 font-semibold py-3 px-4 rounded-xl transition-colors shadow-sm cursor-pointer">
+                <Upload className="w-5 h-5" /> Bulk Upload CSV
+                <input
+                  type="file"
+                  accept=".csv"
+                  className="hidden"
+                  onChange={handleBulkUpload}
+                />
+              </label>
+            </div>
           </div>
-
-        
         </div>
 
         {/* Shift Logs Table */}
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
           <div className="px-6 py-5 border-b border-slate-200 flex items-center justify-between">
-            <h2 className="text-base font-bold text-slate-900">Recent Shift Logs</h2>
+            <h2 className="text-base font-bold text-slate-900">
+              Recent Shift Logs
+            </h2>
             <span className="text-xs bg-slate-100 text-slate-600 font-medium px-3 py-1 rounded-full">
               {shiftLogs.length} entries
             </span>
@@ -214,8 +339,23 @@ export default function WorkerDashboard() {
             <table className="w-full">
               <thead>
                 <tr className="bg-slate-50 border-b border-slate-200">
-                  {["Date", "Platform", "City", "Zone", "Hours", "Gross", "Deductions", "Net Earned", "Status", "Proof"].map((h) => (
-                    <th key={h} className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">{h}</th>
+                  {[
+                    "Date",
+                    "Platform",
+                    "City",
+                    "Hours",
+                    "Gross",
+                    "Deductions",
+                    "Net Earned",
+                    "Status",
+                    "Proof",
+                  ].map((h) => (
+                    <th
+                      key={h}
+                      className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider"
+                    >
+                      {h}
+                    </th>
                   ))}
                 </tr>
               </thead>
@@ -223,65 +363,125 @@ export default function WorkerDashboard() {
                 {isLogsLoading ? (
                   Array.from({ length: 3 }).map((_, idx) => (
                     <tr key={`skeleton-${idx}`} className="animate-pulse">
-                      <td className="px-6 py-4"><div className="h-4 bg-slate-200 rounded w-16"></div></td>
-                      <td className="px-6 py-4"><div className="h-4 bg-slate-200 rounded w-20"></div></td>
-                      <td className="px-6 py-4"><div className="h-4 bg-slate-200 rounded w-12"></div></td>
-                      <td className="px-6 py-4"><div className="h-4 bg-slate-200 rounded w-16"></div></td>
-                      <td className="px-6 py-4"><div className="h-4 bg-slate-200 rounded w-16"></div></td>
-                      <td className="px-6 py-4"><div className="h-4 bg-slate-200 rounded w-20"></div></td>
-                      <td className="px-6 py-4"><div className="h-4 bg-slate-200 rounded w-16"></div></td>
-                      <td className="px-6 py-4"><div className="h-6 w-6 bg-slate-200 rounded"></div></td>
+                      <td className="px-6 py-4">
+                        <div className="h-4 bg-slate-200 rounded w-16"></div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="h-4 bg-slate-200 rounded w-20"></div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="h-4 bg-slate-200 rounded w-12"></div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="h-4 bg-slate-200 rounded w-16"></div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="h-4 bg-slate-200 rounded w-16"></div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="h-4 bg-slate-200 rounded w-20"></div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="h-4 bg-slate-200 rounded w-16"></div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="h-6 w-6 bg-slate-200 rounded"></div>
+                      </td>
                     </tr>
                   ))
                 ) : shiftLogs.length === 0 ? (
                   <tr>
-                    <td colSpan="8" className="px-6 py-8 text-center text-sm text-slate-500">
-                      No shift records found. Submit your first shift log using the button above.
+                    <td
+                      colSpan="8"
+                      className="px-6 py-8 text-center text-sm text-slate-500"
+                    >
+                      No shift records found. Submit your first shift log using
+                      the button above.
                     </td>
                   </tr>
                 ) : (
                   shiftLogs.slice(0, 5).map((log) => (
-                  <tr key={log._id || log.id} className="hover:bg-slate-50 transition-colors">
-                    <td className="px-6 py-4 text-sm text-slate-600">{log.date}</td>
-                    <td className="px-6 py-4 text-sm font-medium text-slate-900">{log.platform}</td>
-                    <td className="px-6 py-4 text-sm text-slate-600">{log.city || 'Unspecified'}</td>
-                    <td className="px-6 py-4 text-sm text-slate-600">{log.city_zone || 'Unspecified'}</td>
-                    <td className="px-6 py-4 text-sm text-slate-600">{log.hours_worked || log.hours}h</td>
-                    <td className="px-6 py-4 text-sm text-slate-600">PKR {(log.gross_earned || log.gross || 0).toLocaleString()}</td>
-                    <td className="px-6 py-4 text-sm text-slate-500">PKR {(log.deduction || log.deductions || 0).toLocaleString()}</td>
-                    <td className="px-6 py-4 text-sm font-bold text-slate-900">PKR {(log.net_received || log.net || 0).toLocaleString()}</td>
-                    <td className="px-6 py-4">
-                      <span className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full ${
-                        log.status === 'verified' || log.status === 'Confirmed' ? statusStyles.Confirmed :
-                        log.status === 'pending' || log.status === 'Pending' ? statusStyles.Pending : statusStyles.Flagged
-                      }`}>
-                        <StatusIcon status={log.status === 'verified' ? 'Confirmed' : log.status === 'pending' ? 'Pending' : 'Flagged'} />
-                        {log.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      {log.screenshot_url ? (
-                        <button
-                          onClick={() => setSelectedImage(log.screenshot_url)}
-                          className="relative block w-10 h-10 rounded-md overflow-hidden border border-slate-200 hover:ring-2 hover:ring-teal-500 transition-all group shrink-0"
-                          title="View Screenshot"
+                    <tr
+                      key={log._id || log.id}
+                      className="hover:bg-slate-50 transition-colors"
+                    >
+                      <td className="px-6 py-4 text-sm text-slate-600">
+                        {log.date}
+                      </td>
+                      <td className="px-6 py-4 text-sm font-medium text-slate-900">
+                        {log.platform}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-slate-600">
+                        {log.city || "Unspecified"}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-slate-600">
+                        {log.hours_worked || log.hours}h
+                      </td>
+                      <td className="px-6 py-4 text-sm text-slate-600">
+                        PKR{" "}
+                        {(log.gross_earned || log.gross || 0).toLocaleString()}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-slate-500">
+                        PKR{" "}
+                        {(
+                          log.deduction ||
+                          log.deductions ||
+                          0
+                        ).toLocaleString()}
+                      </td>
+                      <td className="px-6 py-4 text-sm font-bold text-slate-900">
+                        PKR{" "}
+                        {(log.net_received || log.net || 0).toLocaleString()}
+                      </td>
+                      <td className="px-6 py-4">
+                        <span
+                          className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full ${
+                            log.status === "verified" ||
+                            log.status === "Confirmed"
+                              ? statusStyles.Confirmed
+                              : log.status === "pending" ||
+                                  log.status === "Pending"
+                                ? statusStyles.Pending
+                                : statusStyles.Flagged
+                          }`}
                         >
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img 
-                            src={log.screenshot_url} 
-                            alt="Proof copy" 
-                            className="w-full h-full object-cover"
+                          <StatusIcon
+                            status={
+                              log.status === "verified"
+                                ? "Confirmed"
+                                : log.status === "pending"
+                                  ? "Pending"
+                                  : "Flagged"
+                            }
                           />
-                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                            <ImageIcon className="w-4 h-4 text-white" />
-                          </div>
-                        </button>
-                      ) : (
-                        <span className="text-xs text-slate-400 italic">No proof</span>
-                      )}
-                    </td>
-                  </tr>
-                ))
+                          {log.status}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        {log.screenshot_url ? (
+                          <button
+                            onClick={() => setSelectedImage(log.screenshot_url)}
+                            className="relative block w-10 h-10 rounded-md overflow-hidden border border-slate-200 hover:ring-2 hover:ring-teal-500 transition-all group shrink-0"
+                            title="View Screenshot"
+                          >
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={log.screenshot_url}
+                              alt="Proof copy"
+                              className="w-full h-full object-cover"
+                            />
+                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                              <ImageIcon className="w-4 h-4 text-white" />
+                            </div>
+                          </button>
+                        ) : (
+                          <span className="text-xs text-slate-400 italic">
+                            No proof
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  ))
                 )}
               </tbody>
             </table>
@@ -290,16 +490,16 @@ export default function WorkerDashboard() {
 
         {/* Full Image Lightbox Modal */}
         {selectedImage && (
-          <div 
+          <div
             className="fixed inset-0 z-100 bg-slate-900/80 backdrop-blur-sm flex justify-center items-center p-4 cursor-zoom-out animate-in fade-in"
             onClick={() => setSelectedImage(null)}
           >
-            <div 
+            <div
               className="relative max-w-4xl w-full max-h-[90vh] bg-white rounded-xl shadow-2xl flex flex-col cursor-auto animate-in zoom-in-95"
               onClick={(e) => e.stopPropagation()} // Prevent clicking the image card from closing the modal
             >
               <div className="absolute -top-4 -right-4 z-10">
-                <button 
+                <button
                   onClick={() => setSelectedImage(null)}
                   className="bg-white text-slate-500 hover:text-slate-900 border border-slate-200 p-2 rounded-full shadow-md transition-colors"
                 >
@@ -308,16 +508,15 @@ export default function WorkerDashboard() {
               </div>
               <div className="p-2 overflow-auto bg-slate-100 rounded-xl flex items-center justify-center min-h-[40vh]">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img 
-                  src={selectedImage} 
-                  alt="Shift Proof Screenshot" 
+                <img
+                  src={selectedImage}
+                  alt="Shift Proof Screenshot"
                   className="object-contain max-h-[85vh] rounded-lg shadow-sm"
                 />
               </div>
             </div>
           </div>
         )}
-
       </main>
     </div>
   );
