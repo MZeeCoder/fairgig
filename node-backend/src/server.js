@@ -6,13 +6,13 @@ import connectDb from "./config/dbConfig.js";
 import { globalError } from "./utils/apiError.js";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import { initializeSocket } from "./socket/index.js";
 
 const app = express();
 const httpServer = createServer(app);
 
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ limit: "10mb", extended: true }));
-
 
 app.use(
   cors({
@@ -33,6 +33,8 @@ const startServer = async () => {
   try {
     await configInit();
     await connectDb();
+    const io = initializeSocket(httpServer);
+    app.set("io", io);
 
     httpServer.listen(PORT, () => {
       console.log(`Server is connected http://localhost:${PORT}`);
