@@ -11,7 +11,7 @@ export const registerSchema = z.object({
   email: z.string().email("Please enter a valid email address."),
   password: z.string().min(8, "Password must be at least 8 characters."),
   confirmPassword: z.string(),
-  phone: z.string().min(11, "Phone is required."),
+  phone: z.string().min(11, "Phone is required.").max(11, "Phone must be exactly 11 characters."),
   city: z.string().min(2, "City is required."),
 });
 

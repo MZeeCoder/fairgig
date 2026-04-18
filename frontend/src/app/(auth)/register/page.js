@@ -207,7 +207,7 @@ export default function RegisterPage() {
                     value={formData.name}
                     onChange={handleChange}
                     placeholder="Ali Hassan"
-                    className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
+                    className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm text-slate-900 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
                   />
                 </div>
                 {fieldErrors.name?.[0] && (
@@ -224,7 +224,7 @@ export default function RegisterPage() {
                     value={formData.email}
                     onChange={handleChange}
                     placeholder="ali@example.com"
-                    className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
+                    className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm text-slate-900 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
                   />
                 </div>
                 {fieldErrors.email?.[0] && (
@@ -240,10 +240,11 @@ export default function RegisterPage() {
                 <input
                   type="text"
                   name="phone"
+                  maxLength={11}
                   value={formData.phone}
                   onChange={handleChange}
                   placeholder="0300XXXXXXX"
-                  className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
+                  className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm text-slate-900 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
                 />
               </div>
               {fieldErrors.phone?.[0] && (
@@ -262,7 +263,7 @@ export default function RegisterPage() {
                     value={formData.password}
                     onChange={handleChange}
                     placeholder="••••••••"
-                    className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
+                    className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm text-slate-900 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
                   />
                 </div>
                 {fieldErrors.password?.[0] && (
@@ -279,7 +280,7 @@ export default function RegisterPage() {
                     value={formData.confirmPassword}
                     onChange={handleChange}
                     placeholder="••••••••"
-                    className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
+                    className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm text-slate-900 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
                   />
                 </div>
                 {fieldErrors.confirmPassword?.[0] && (
@@ -298,7 +299,7 @@ export default function RegisterPage() {
                   value={formData.city}
                   onChange={handleChange}
                   placeholder="Lahore, Karachi, Islamabad..."
-                  className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
+                  className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm text-slate-900 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
                 />
               </div>
               {fieldErrors.city?.[0] && (
@@ -317,7 +318,7 @@ export default function RegisterPage() {
                     value={formData.platforms}
                     onChange={handleChange}
                     placeholder="Uber, Foodpanda, Bykea, Careem..."
-                    className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
+                    className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm text-slate-900 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
                   />
                 </div>
                 {fieldErrors.platforms?.[0] && (
@@ -335,7 +336,7 @@ export default function RegisterPage() {
                     name="role"
                     value={formData.role}
                     onChange={handleChange}
-                    className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 appearance-none"
+                    className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm bg-white text-slate-900 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 appearance-none"
                   >
                     <option value="">Select a role...</option>
                     <option value="verifier">Verifier</option>
@@ -355,7 +356,7 @@ export default function RegisterPage() {
                     multiple
                     onChange={handleChange}
                     accept="image/*,.pdf,.doc,.docx"
-                    className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
+                    className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm bg-white text-slate-900 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
                   />
                 </div>
                 {fieldErrors.documents?.[0] && (

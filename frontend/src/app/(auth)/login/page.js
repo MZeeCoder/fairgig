@@ -97,7 +97,7 @@ export default function LoginPage() {
                     setFieldErrors((prev) => ({ ...prev, email: undefined }));
                   }}
                   placeholder="you@example.com"
-                  className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
+                  className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm text-slate-900 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
                 />
               </div>
               {fieldErrors.email?.[0] && (
@@ -120,7 +120,7 @@ export default function LoginPage() {
                     setFieldErrors((prev) => ({ ...prev, password: undefined }));
                   }}
                   placeholder="••••••••"
-                  className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
+                  className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm text-slate-900 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
                 />
               </div>
               {fieldErrors.password?.[0] && (
