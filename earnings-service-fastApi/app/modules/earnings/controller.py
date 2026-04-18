@@ -10,7 +10,6 @@ class EarningsController:
     @staticmethod
     async def create_earning(
         request: Request,
-        worker_id: str = Form(...),
         platform: str = Form(...),
         date_value: date = Form(..., alias="date"),
         hours_worked: float = Form(...),
@@ -19,6 +18,10 @@ class EarningsController:
         net_received: float = Form(...),
         screenshot_url: str | None = Depends(upload_single_image_middleware),
     ):
+        worker_id = getattr(request.state, "worker_id", None)
+        if not worker_id:
+            raise HTTPException(status_code=401, detail="Unauthorized")
+
         if not screenshot_url:
             raise HTTPException(status_code=400, detail="Screenshot image is required")
 
