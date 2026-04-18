@@ -17,11 +17,14 @@ export function middleware(request) {
   if (refreshToken) {
     // If logged-in user tries to access login/register, redirect to their dashboard
     if (isAuthPage) {
-      let dashboardUrl = '/login'; // Default fallback
-      if (userRole === 'worker') dashboardUrl = '/worker';
-      if (userRole === 'verifier') dashboardUrl = '/verifier';
-      if (userRole === 'advocate') dashboardUrl = '/advocate';
-      return NextResponse.redirect(new URL(dashboardUrl, request.url));
+      if (userRole === 'worker') {
+        return NextResponse.redirect(new URL('/worker', request.url));
+      } else if (userRole === 'verifier') {
+        return NextResponse.redirect(new URL('/verifier', request.url));
+      } else if (userRole === 'advocate') {
+        return NextResponse.redirect(new URL('/advocate', request.url));
+      }
+      // If none of the roles match, avoid redirecting to /login to prevent an infinite redirect loop.
     }
 
     // Role-Based Access Control (RBAC)

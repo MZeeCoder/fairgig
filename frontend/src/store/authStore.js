@@ -13,7 +13,9 @@ const useAuthStore = create((set) => ({
     if (typeof window !== 'undefined') {
       localStorage.setItem('accessToken', accessToken);
     }
-    Cookies.set('refreshToken', refreshToken, { expires: 7, secure: process.env.NODE_ENV === 'production' });
+    if (refreshToken) {
+      Cookies.set('refreshToken', refreshToken, { expires: 7});
+    }
     Cookies.set('userRole', userData.role, { expires: 7, secure: process.env.NODE_ENV === 'production' });
   },
 

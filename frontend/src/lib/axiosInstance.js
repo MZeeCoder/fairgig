@@ -1,38 +1,51 @@
 import axios from 'axios';
-import useAuthStore from '../store/authStore';
 
-const axiosInstance = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api',
+const normalizeApiBaseUrl = (rawUrl) => {
+  const fallback = 'http://localhost:5000';
+  const base = (rawUrl || fallback).replace(/\/+$/, '');
+
+  if (base.endsWith('/api/v1')) {
+    return base;
+  }
+
+  if (base.endsWith('/api')) {
+    return `${base}/v1`;
+  }
+
+  return `${base}/api/v1`;
+};
+
+const api = axios.create({
+  baseURL: normalizeApiBaseUrl(process.env.NEXT_PUBLIC_API_URL),
+  withCredentials: true,
 });
 
-// Request interceptor to add the auth token to headers
-axiosInstance.interceptors.request.use(
+// request interceptor
+api.interceptors.request.use(
   (config) => {
-    // Get accessToken from localStorage
-    let token = null;
-    if (typeof window !== 'undefined') {
-      token = localStorage.getItem('accessToken');
-    }
     
-    if (token) {
-      config.headers['Authorization'] = `Bearer ${token}`;
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('accessToken');
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
     }
     return config;
   },
   (error) => {
+    console.error("Request interceptor error:", error);
     return Promise.reject(error);
   }
 );
 
-// You can also add a response interceptor to handle global errors, e.g., 401 Unauthorized
-axiosInstance.interceptors.response.use(
-  (response) => response,
+// unauthorized errors globally
+api.interceptors.response.use(
+  (res) => res,
   (error) => {
-    if (error.response && error.response.status === 401) {
-      // If unauthorized, trigger logout
-      useAuthStore.getState().logout();
-      // Optionally redirect to login page
+    if (error.response?.status === 401) {
+      console.log("Unauthorized! Kicking user back to login...");
       if (typeof window !== 'undefined') {
+        localStorage.removeItem('accessToken');
         window.location.href = '/login';
       }
     }
@@ -40,5 +53,4 @@ axiosInstance.interceptors.response.use(
   }
 );
 
-
-export default axiosInstance;
+export default api;
