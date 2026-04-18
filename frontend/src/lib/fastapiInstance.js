@@ -1,4 +1,5 @@
 import axios from "axios";
+import { getAccessToken } from "@/lib/clientAuth";
 
 const isProduction = process.env.NODE_ENV === "production";
 const productionFastApiUrl =
@@ -13,11 +14,9 @@ const fastApi = axios.create({
 
 fastApi.interceptors.request.use(
   (config) => {
-    if (typeof window !== "undefined") {
-      const token = localStorage.getItem("accessToken");
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
+    const token = getAccessToken();
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },

@@ -1,4 +1,5 @@
 import axios from "axios";
+import { clearClientAuth, getAccessToken } from "@/lib/clientAuth";
 
 const isProduction = process.env.NODE_ENV === "production";
 const productionApiUrl =
@@ -30,11 +31,9 @@ const api = axios.create({
 // request interceptor
 api.interceptors.request.use(
   (config) => {
-    if (typeof window !== "undefined") {
-      const token = localStorage.getItem("accessToken");
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
+    const token = getAccessToken();
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
@@ -51,7 +50,7 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       console.log("Unauthorized! Kicking user back to login...");
       if (typeof window !== "undefined") {
-        localStorage.removeItem("accessToken");
+        clearClientAuth();
         window.location.href = "/login";
       }
     }
