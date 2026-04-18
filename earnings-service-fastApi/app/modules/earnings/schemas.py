@@ -43,6 +43,7 @@ class WorkerEarningItem(BaseModel):
     deduction: float
     net_received: float
     screenshot_url: str
+    anomaly_explanation: str | None = None
     status: EarningsStatus
 
 

@@ -29,6 +29,7 @@ class EarningsService:
             deduction=payload["deduction"],
             net_received=payload["net_received"],
             screenshot_url=payload["screenshot_url"],
+            anomaly_explanation=payload.get("anomaly_explanation"),
         )
         await earning.insert()
         return earning
@@ -53,6 +54,7 @@ class EarningsService:
             deduction=float(document.get("deduction", 0.0) or 0.0),
             net_received=float(document.get("net_received", 0.0) or 0.0),
             screenshot_url=str(document.get("screenshot_url", "")),
+            anomaly_explanation=document.get("anomaly_explanation"),
             status=document.get("status", "pending"),
         )
 

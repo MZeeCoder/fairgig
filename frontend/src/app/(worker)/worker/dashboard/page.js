@@ -9,7 +9,7 @@ import {
 import Link from "next/link";
 
 import LogShiftModal from "./LogShiftModal";
-import { fetchHistory } from "@/services/earnings.api";
+import { detectAnomaly, fetchHistory } from "@/services/earnings.api";
 
 // ── Mock Data ────────────────────────────────────────────────
 // The mock data has been removed to prepare for API integration.
@@ -82,6 +82,7 @@ export default function WorkerDashboard() {
   const [shiftLogs, setShiftLogs] = useState([]);
   const [isLogsLoading, setIsLogsLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState(null);
+  const [anomalyNotice, setAnomalyNotice] = useState(null);
 
   useEffect(() => {
     // Fetch History Data
@@ -107,6 +108,35 @@ export default function WorkerDashboard() {
   const handleShiftAdded = (newShift) => {
     // Add the new shift at the top of the table locally
     setShiftLogs((prev) => [newShift, ...prev]);
+
+    const earningId = newShift?._id || newShift?.id;
+    if (!earningId) return;
+
+    void detectAnomaly(earningId)
+      .then((result) => {
+        if (!result?.is_anomaly) return;
+
+        setAnomalyNotice({
+          id: earningId,
+          type: result.anomaly_type,
+          message: result.explanation,
+        });
+
+        setShiftLogs((prev) =>
+          prev.map((log) =>
+            (log?._id || log?.id) === earningId
+              ? {
+                  ...log,
+                  anomaly_explanation: result.explanation,
+                  status: "flagged",
+                }
+              : log,
+          ),
+        );
+      })
+      .catch((err) => {
+        console.error("Background anomaly detection failed:", err);
+      });
   };
 
   return (
@@ -114,6 +144,30 @@ export default function WorkerDashboard() {
       <Header />
 
       <main className="max-w-7xl mx-auto px-8 py-8">
+
+        {anomalyNotice && (
+          <div className="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-4 text-red-900 shadow-sm flex items-start justify-between gap-4">
+            <div className="flex items-start gap-3">
+              <div className="mt-0.5 flex h-8 w-8 items-center justify-center rounded-full bg-red-100 text-red-600">
+                <AlertTriangle className="h-4 w-4" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold uppercase tracking-wide text-red-700">
+                  Anomaly detected
+                </p>
+                <p className="mt-1 text-sm text-red-800">{anomalyNotice.message}</p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setAnomalyNotice(null)}
+              className="rounded-full p-2 text-red-500 transition-colors hover:bg-red-100 hover:text-red-700"
+              aria-label="Dismiss anomaly alert"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        )}
         
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-slate-900 mb-1">Good morning, Ali 👋</h1>
@@ -235,7 +289,7 @@ export default function WorkerDashboard() {
         {/* Full Image Lightbox Modal */}
         {selectedImage && (
           <div 
-            className="fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-sm flex justify-center items-center p-4 cursor-zoom-out animate-in fade-in"
+            className="fixed inset-0 z-100 bg-slate-900/80 backdrop-blur-sm flex justify-center items-center p-4 cursor-zoom-out animate-in fade-in"
             onClick={() => setSelectedImage(null)}
           >
             <div 

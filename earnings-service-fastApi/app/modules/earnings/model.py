@@ -22,6 +22,7 @@ class Earnings(Document):
     deduction: float = Field(ge=0)
     net_received: float = Field(ge=0)
     screenshot_url: str = Field(min_length=1)
+    anomaly_explanation: str | None = Field(default=None)
     status: EarningsStatus = EarningsStatus.PENDING
 
     class Settings:

@@ -10,6 +10,21 @@ export const submitShiftLog = async (formData) => {
   }
 };
 
+export const detectAnomaly = async (newEarningId) => {
+  try {
+    const res = await fastApi.post("/anomaly/detect", {
+      new_earning_id: newEarningId,
+    });
+    return res.data;
+  } catch (error) {
+    console.error(
+      "Anomaly Detection Error:",
+      error?.response?.data || error.message,
+    );
+    throw error;
+  }
+};
+
 export const fetchPlatforms = async () => {
   try {
     const res = await fastApi.get("/api/v1/earnings/analytics/platforms");
