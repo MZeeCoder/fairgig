@@ -13,4 +13,6 @@ grievanceRouter.post(
   GrievanceController.create,
 );
 
+grievanceRouter.get("/user/:userId", auth, GrievanceController.getByUserId);
+
 export default grievanceRouter;
