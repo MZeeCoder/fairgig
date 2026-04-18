@@ -2,10 +2,16 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Loader2, Briefcase, Mail, Lock } from "lucide-react";
 import { authSchemas } from "../../../schemas/auth.schema";
+import { loginUser } from "../../../services/auth.api";
+import useAuthStore from "../../../store/authStore";
 
 export default function LoginPage() {
+  const router = useRouter();
+  const login = useAuthStore((state) => state.login);
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -29,12 +35,26 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      console.log("Logging in:", { email });
-      setTimeout(() => {
-        setIsLoading(false);
-      }, 1000);
-    } catch {
-      setError("Login failed. Please try again.");
+      const response = await loginUser({ email, password });
+      
+      const { user, accessToken, refreshToken } = response?.data || {};
+
+      if (!user || !accessToken) {
+        throw new Error("Invalid login response from server.");
+      }
+
+      login(user, accessToken, refreshToken);
+
+      const roleRouteMap = {
+        worker: "/worker",
+        verifier: "/verifier",
+        advocate: "/advocate",
+      };
+
+      router.push(roleRouteMap[user.role] || "/unauthorized");
+    } catch (err) {
+      setError(err?.response?.data?.message || err?.message || "Login failed. Please try again.");
+    } finally {
       setIsLoading(false);
     }
   };
