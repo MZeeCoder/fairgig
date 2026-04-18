@@ -19,7 +19,15 @@ export const fetchPlatforms = async () => {
     throw error;
   }
 };
-
+export const fetchWorkerDashboard = async (params = {}) => {
+  try {
+    const res = await fastApi.get('/api/v1/earnings/analytics/worker-dashboard', { params });
+    return res.data;
+  } catch (error) {
+    console.error("Fetch Worker Dashboard Error:", error?.response?.data || error.message);
+    throw error;
+  }
+};
 export const fetchHistory = async () => {
   try {
     const res = await fastApi.get('/api/v1/earnings/history');

@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 from math import ceil
 
 from beanie import PydanticObjectId
@@ -122,9 +122,9 @@ class EarningsService:
         if start_date or end_date:
             date_filter: dict = {}
             if start_date:
-                date_filter["$gte"] = start_date
+                date_filter["$gte"] = datetime.combine(start_date, datetime.min.time())
             if end_date:
-                date_filter["$lte"] = end_date
+                date_filter["$lte"] = datetime.combine(end_date, datetime.max.time())
             match_filter["date"] = date_filter
 
         pipeline = [
@@ -170,9 +170,9 @@ class EarningsService:
         if start_date or end_date:
             date_filter: dict = {}
             if start_date:
-                date_filter["$gte"] = start_date
+                date_filter["$gte"] = datetime.combine(start_date, datetime.min.time())
             if end_date:
-                date_filter["$lte"] = end_date
+                date_filter["$lte"] = datetime.combine(end_date, datetime.max.time())
             match_filter["date"] = date_filter
 
         summary_pipeline = [

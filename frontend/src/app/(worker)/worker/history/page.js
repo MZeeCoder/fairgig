@@ -1,96 +1,156 @@
 "use client";
 
-import { useState } from "react";
-import { Filter, Loader2, Download } from "lucide-react";
-
-const allHistory = [
-  { id: 1, date: "2025-07-15", platform: "Uber", hours: 6.5, net: 4850, status: "Confirmed" },
-  { id: 2, date: "2025-07-14", platform: "Foodpanda", hours: 4.0, net: 2450, status: "Pending" },
-  { id: 3, date: "2025-07-10", platform: "Bykea", hours: 8.0, net: 5800, status: "Flagged" },
-  { id: 4, date: "2025-06-28", platform: "Uber", hours: 5.5, net: 3900, status: "Confirmed" },
-  { id: 5, date: "2025-06-15", platform: "Foodpanda", hours: 7.0, net: 4100, status: "Confirmed" },
-];
+import { useState, useEffect } from "react";
+import { Filter, Loader2, Calendar, LayoutDashboard } from "lucide-react";
+import { fetchPlatforms, fetchWorkerDashboard } from "../../../../services/earnings.api";
+import AnalyticsModal from "./AnalyticsModal";
 
 export default function HistoryPage() {
-  const [filter, setFilter] = useState("all");
-  const [isLoading, setIsLoading] = useState(false);
+  const [platforms, setPlatforms] = useState([]);
+  
+  // Form State
+  const [selectedPlatform, setSelectedPlatform] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
 
-  const handleFilterChange = (e) => {
-    setFilter(e.target.value);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [dashboardData, setDashboardData] = useState(null);
+
+  useEffect(() => {
+    const loadPlatforms = async () => {
+      try {
+        const res = await fetchPlatforms();
+        setPlatforms(Array.isArray(res?.data) ? res.data : []);
+      } catch (error) {
+        console.error("Failed to load platforms", error);
+      }
+    };
+    loadPlatforms();
+  }, []);
+
+  const handleGenerate = async (e) => {
+    e.preventDefault();
+    if (startDate && endDate && new Date(startDate) > new Date(endDate)) {
+      alert("Start Date cannot be after End Date.");
+      return;
+    }
+
     setIsLoading(true);
-    // Fake network delay when changing filters
-    setTimeout(() => {
+    setDashboardData(null);
+    try {
+      const res = await fetchWorkerDashboard({
+        platform: selectedPlatform || undefined,
+        start_date: startDate || undefined,
+        end_date: endDate || undefined,
+      });
+      setDashboardData(res.data || res);
+      // Open modal right away once generated successfully
+      setIsModalOpen(true);
+    } catch (error) {
+      console.error("Failed to generate analytics", error);
+      alert("Failed to fetch analytics data.");
+    } finally {
       setIsLoading(false);
-    }, 800);
+    }
   };
 
   return (
-    <main className="p-8 max-w-6xl mx-auto">
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Earnings History</h1>
-          <p className="text-sm text-slate-500 mt-1">Review your verified and pending income.</p>
-        </div>
-        
-        <div className="flex items-center gap-3">
-          <div className="relative">
-            <Filter className="absolute left-3 top-2.5 w-4 h-4 text-slate-400" />
-            <select 
-              value={filter}
-              onChange={handleFilterChange}
-              className="pl-9 pr-8 py-2 bg-white border border-slate-200 rounded-lg text-sm text-slate-700 focus:outline-none focus:ring-1 focus:ring-teal-500 appearance-none cursor-pointer"
-            >
-              <option value="all">All Time</option>
-              <option value="week">This Week</option>
-              <option value="month">This Month</option>
-              <option value="year">This Year</option>
-            </select>
-          </div>
-          <button className="flex items-center gap-2 bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 font-medium text-sm px-4 py-2 rounded-lg transition-colors">
-            <Download className="w-4 h-4" />
-            Export CSV
-          </button>
-        </div>
+    <main className="p-8 max-w-4xl mx-auto">
+      <div className="mb-10">
+        <h1 className="text-3xl font-bold text-slate-900">Analytics Dashboard</h1>
+        <p className="text-slate-500 mt-2">Generate and view your earnings analytics by filtering platform and date ranges.</p>
       </div>
 
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        {isLoading ? (
-          <div className="h-64 flex flex-col items-center justify-center">
-            <Loader2 className="w-8 h-8 text-teal-600 animate-spin mb-4" />
-            <p className="text-sm text-slate-500">Loading records...</p>
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden p-6 md:p-8">
+        <form onSubmit={handleGenerate} className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            
+            {/* Platform Selection */}
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-slate-700 block">Platform</label>
+              <div className="relative">
+                <Filter className="absolute left-3 top-3 w-5 h-5 text-slate-400" />
+                <select 
+                  value={selectedPlatform}
+                  onChange={(e) => setSelectedPlatform(e.target.value)}
+                  className="w-full pl-10 pr-8 py-2.5 bg-white border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 appearance-none cursor-pointer"
+                >
+                  <option value="">All Platforms</option>
+                  {platforms.map((p, idx) => {
+                    const pName = typeof p === 'string' ? p : p.name || p.platform;
+                    return (
+                      <option key={idx} value={pName}>
+                        {pName}
+                      </option>
+                    );
+                  })}
+                </select>
+              </div>
+            </div>
+
+            {/* Start Date */}
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-slate-700 block">Start Date</label>
+              <div className="relative">
+                <Calendar className="absolute left-3 top-3 w-5 h-5 text-slate-400" />
+                <input 
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
+                />
+              </div>
+            </div>
+
+            {/* End Date */}
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-slate-700 block">End Date</label>
+              <div className="relative">
+                <Calendar className="absolute left-3 top-3 w-5 h-5 text-slate-400" />
+                <input 
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
+                />
+              </div>
+            </div>
+
           </div>
-        ) : (
-          <table className="w-full">
-            <thead>
-              <tr className="bg-slate-50 border-b border-slate-200">
-                <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Date</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Platform</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Hours</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Net Earned</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {allHistory.map((log) => (
-                <tr key={log.id} className="hover:bg-slate-50 transition-colors">
-                  <td className="px-6 py-4 text-sm text-slate-600">{log.date}</td>
-                  <td className="px-6 py-4 text-sm font-medium text-slate-900">{log.platform}</td>
-                  <td className="px-6 py-4 text-sm text-slate-600">{log.hours}h</td>
-                  <td className="px-6 py-4 text-sm font-bold text-slate-900">PKR {log.net.toLocaleString()}</td>
-                  <td className="px-6 py-4">
-                    <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${
-                      log.status === 'Confirmed' ? 'bg-teal-50 text-teal-700' :
-                      log.status === 'Pending' ? 'bg-amber-50 text-amber-700' : 'bg-red-50 text-red-700'
-                    }`}>
-                      {log.status}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
+
+          <div className="pt-4 flex justify-end">
+            <button 
+              type="submit"
+              disabled={isLoading}
+              className="flex items-center gap-2 bg-teal-600 text-white hover:bg-teal-700 font-medium px-6 py-3 rounded-xl transition-colors disabled:opacity-70 disabled:cursor-not-allowed shadow-sm"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <LayoutDashboard className="w-5 h-5" />
+                  Generate Dashboard
+                </>
+              )}
+            </button>
+          </div>
+        </form>
       </div>
+
+      {isModalOpen && dashboardData && (
+        <AnalyticsModal 
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          data={dashboardData}
+          platform={selectedPlatform}
+          startDate={startDate}
+          endDate={endDate}
+        />
+      )}
     </main>
   );
 }
