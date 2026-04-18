@@ -1,7 +1,23 @@
 import Grievance from "../grievance/model.js";
 import User from "../user/model.js";
+import mongoose from "mongoose";
 
 class AdvocateService {
+  static _calculateMedian(values) {
+    if (!values.length) {
+      return 0;
+    }
+
+    const sorted = [...values].sort((a, b) => a - b);
+    const middle = Math.floor(sorted.length / 2);
+
+    if (sorted.length % 2 === 0) {
+      return (sorted[middle - 1] + sorted[middle]) / 2;
+    }
+
+    return sorted[middle];
+  }
+
   static async getOpenGrievances(filters = {}) {
     const matchStage = {
       status: "open",
@@ -198,6 +214,245 @@ class AdvocateService {
         name: advocate.name,
         email: advocate.email,
       },
+    };
+  }
+
+  static async getLast30DaysCommissionTrendByPlatform(platform) {
+    const db = mongoose.connection.db;
+    const earningsCollection = db.collection("earnings");
+
+    const endDate = new Date();
+    endDate.setUTCHours(23, 59, 59, 999);
+
+    const startDate = new Date(endDate);
+    startDate.setUTCDate(startDate.getUTCDate() - 29);
+    startDate.setUTCHours(0, 0, 0, 0);
+
+    const trendRows = await earningsCollection
+      .aggregate([
+        {
+          $match: {
+            platform,
+          },
+        },
+        {
+          $addFields: {
+            parsedDate: {
+              $switch: {
+                branches: [
+                  {
+                    case: { $eq: [{ $type: "$date" }, "date"] },
+                    then: "$date",
+                  },
+                  {
+                    case: { $eq: [{ $type: "$date" }, "string"] },
+                    then: {
+                      $dateFromString: {
+                        dateString: "$date",
+                        onError: null,
+                        onNull: null,
+                      },
+                    },
+                  },
+                ],
+                default: null,
+              },
+            },
+            grossValue: {
+              $convert: {
+                input: "$gross_earned",
+                to: "double",
+                onError: 0,
+                onNull: 0,
+              },
+            },
+            deductionValue: {
+              $convert: {
+                input: "$deduction",
+                to: "double",
+                onError: 0,
+                onNull: 0,
+              },
+            },
+          },
+        },
+        {
+          $match: {
+            parsedDate: {
+              $gte: startDate,
+              $lte: endDate,
+            },
+          },
+        },
+        {
+          $group: {
+            _id: {
+              $dateToString: {
+                format: "%Y-%m-%d",
+                date: "$parsedDate",
+              },
+            },
+            total_deduction: {
+              $sum: "$deductionValue",
+            },
+            total_gross_earned: {
+              $sum: "$grossValue",
+            },
+          },
+        },
+        {
+          $project: {
+            _id: 0,
+            date: "$_id",
+            total_deduction: {
+              $round: ["$total_deduction", 2],
+            },
+            total_gross_earned: {
+              $round: ["$total_gross_earned", 2],
+            },
+            commission_percentage: {
+              $cond: [
+                { $gt: ["$total_gross_earned", 0] },
+                {
+                  $round: [
+                    {
+                      $multiply: [
+                        {
+                          $divide: ["$total_deduction", "$total_gross_earned"],
+                        },
+                        100,
+                      ],
+                    },
+                    2,
+                  ],
+                },
+                0,
+              ],
+            },
+          },
+        },
+        {
+          $sort: {
+            date: 1,
+          },
+        },
+      ])
+      .toArray();
+
+    const rowsByDate = new Map(trendRows.map((row) => [row.date, row]));
+    const trend = [];
+
+    const cursor = new Date(startDate);
+    while (cursor <= endDate) {
+      const dateKey = cursor.toISOString().split("T")[0];
+      const existing = rowsByDate.get(dateKey);
+
+      trend.push(
+        existing || {
+          date: dateKey,
+          total_deduction: 0,
+          total_gross_earned: 0,
+          commission_percentage: 0,
+        },
+      );
+
+      cursor.setUTCDate(cursor.getUTCDate() + 1);
+    }
+
+    return {
+      platform,
+      window_days: 30,
+      start_date: startDate.toISOString().split("T")[0],
+      end_date: endDate.toISOString().split("T")[0],
+      trend,
+    };
+  }
+
+  static async getCityZoneVolatility(city) {
+    const db = mongoose.connection.db;
+    const earningsCollection = db.collection("earnings");
+
+    const escapedCity = city.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const cityRegex = new RegExp(`^${escapedCity}$`, "i");
+
+    const zoneRows = await earningsCollection
+      .aggregate([
+        {
+          $match: {
+            city: cityRegex,
+          },
+        },
+        {
+          $addFields: {
+            zone: {
+              $cond: [
+                {
+                  $and: [
+                    { $ne: ["$city_zone", null] },
+                    { $ne: ["$city_zone", ""] },
+                  ],
+                },
+                "$city_zone",
+                "unknown",
+              ],
+            },
+            netValue: {
+              $convert: {
+                input: "$net_received",
+                to: "double",
+                onError: 0,
+                onNull: 0,
+              },
+            },
+          },
+        },
+        {
+          $group: {
+            _id: "$zone",
+            values: {
+              $push: "$netValue",
+            },
+            records_count: {
+              $sum: 1,
+            },
+            mean_net_received: {
+              $avg: "$netValue",
+            },
+            std_dev_net_received: {
+              $stdDevPop: "$netValue",
+            },
+          },
+        },
+        {
+          $project: {
+            _id: 0,
+            zone: "$_id",
+            values: 1,
+            std_dev_net_received: {
+              $round: ["$std_dev_net_received", 2],
+            },
+          },
+        },
+        {
+          $sort: {
+            zone: 1,
+          },
+        },
+      ])
+      .toArray();
+
+    const volatility = zoneRows.map((row) => ({
+      zone: row.zone,
+      median_net_received: Number(
+        AdvocateService._calculateMedian(row.values).toFixed(2),
+      ),
+      std_dev_net_received: row.std_dev_net_received,
+    }));
+
+    return {
+      city,
+      zone_count: volatility.length,
+      volatility,
     };
   }
 }

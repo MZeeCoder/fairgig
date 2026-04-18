@@ -2,9 +2,11 @@ import AdvocateService from "./service.js";
 import ApiResponse from "../../utils/apiResponse.js";
 import { ApiError } from "../../utils/apiError.js";
 import {
+  commissionTrendQuerySchema,
   escalateGrievanceParamSchema,
   complaintIdParamSchema,
   openGrievancesQuerySchema,
+  volatilityQuerySchema,
 } from "./validation.js";
 
 class AdvocateController {
@@ -139,6 +141,77 @@ class AdvocateController {
         "Grievance escalated successfully",
         200,
         escalationResult,
+      );
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  static async getCommissionTrendLast30Days(req, res, next) {
+    try {
+      const role = req.user?.role;
+
+      if (role !== "advocate" && role !== "admin") {
+        throw new ApiError(
+          403,
+          "Only advocate or admin can access commission trend",
+        );
+      }
+
+      const queryValidation = commissionTrendQuerySchema.safeParse(req.query);
+
+      if (!queryValidation.success) {
+        throw new ApiError(
+          400,
+          "Invalid query parameters",
+          queryValidation.error.flatten(),
+        );
+      }
+
+      const { platform } = queryValidation.data;
+      const commissionTrend =
+        await AdvocateService.getLast30DaysCommissionTrendByPlatform(platform);
+
+      return ApiResponse.success(
+        res,
+        "Last 30 days commission trend fetched successfully",
+        200,
+        commissionTrend,
+      );
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  static async getVolatilityByCityZone(req, res, next) {
+    try {
+      const role = req.user?.role;
+
+      if (role !== "advocate" && role !== "admin") {
+        throw new ApiError(
+          403,
+          "Only advocate or admin can access volatility analytics",
+        );
+      }
+
+      const queryValidation = volatilityQuerySchema.safeParse(req.query);
+
+      if (!queryValidation.success) {
+        throw new ApiError(
+          400,
+          "Invalid query parameters",
+          queryValidation.error.flatten(),
+        );
+      }
+
+      const { city } = queryValidation.data;
+      const volatilityData = await AdvocateService.getCityZoneVolatility(city);
+
+      return ApiResponse.success(
+        res,
+        "City zone volatility fetched successfully",
+        200,
+        volatilityData,
       );
     } catch (error) {
       return next(error);

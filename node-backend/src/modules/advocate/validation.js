@@ -22,3 +22,11 @@ export const escalateGrievanceParamSchema = z.object({
     .trim()
     .regex(/^[0-9a-fA-F]{24}$/, "Invalid grievance id"),
 });
+
+export const commissionTrendQuerySchema = z.object({
+  platform: z.string().trim().min(2, "platform is required"),
+});
+
+export const volatilityQuerySchema = z.object({
+  city: z.string().trim().min(2, "city is required"),
+});

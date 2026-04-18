@@ -19,5 +19,15 @@ advocateRouter.patch(
   auth,
   AdvocateController.escalateOpenGrievance,
 );
+advocateRouter.get(
+  "/analytics/commission-trend",
+  auth,
+  AdvocateController.getCommissionTrendLast30Days,
+);
+advocateRouter.get(
+  "/volatility",
+  auth,
+  AdvocateController.getVolatilityByCityZone,
+);
 
 export default advocateRouter;
