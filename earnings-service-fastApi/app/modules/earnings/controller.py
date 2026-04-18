@@ -3,7 +3,7 @@ from datetime import date
 from fastapi import Depends, Form, HTTPException, Query, Request
 
 from app.middlewares import upload_single_image_middleware
-from app.modules.earnings.schemas import WorkerDashboardResponse
+from app.modules.earnings.schemas import WorkerDashboardResponse, WorkerEarningsResponse
 from app.modules.earnings.service import EarningsService
 
 
@@ -54,6 +54,22 @@ class EarningsController:
             "message": "Platforms fetched successfully",
             "data": platforms,
         }
+
+    @staticmethod
+    async def get_worker_earnings(
+        request: Request,
+        page: int = Query(default=1, ge=1),
+        limit: int = Query(default=10, ge=1, le=100),
+    ) -> WorkerEarningsResponse:
+        worker_id = getattr(request.state, "worker_id", None)
+        if not worker_id:
+            raise HTTPException(status_code=401, detail="Unauthorized")
+
+        return await EarningsService.get_worker_earnings(
+            worker_id=worker_id,
+            page=page,
+            limit=limit,
+        )
 
     @staticmethod
     async def get_worker_dashboard(

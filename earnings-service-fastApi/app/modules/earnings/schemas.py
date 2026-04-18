@@ -1,4 +1,8 @@
+from datetime import date
+
 from pydantic import BaseModel
+
+from app.modules.earnings.model import EarningsStatus
 
 
 class ActiveFilter(BaseModel):
@@ -27,6 +31,32 @@ class BenchmarkMetrics(BaseModel):
     city: str
     city_median: float
     status: str
+
+
+class WorkerEarningItem(BaseModel):
+    id: str
+    worker_id: str
+    platform: str
+    date: date
+    hours_worked: float
+    gross_earned: float
+    deduction: float
+    net_received: float
+    screenshot_url: str
+    status: EarningsStatus
+
+
+class PaginationMeta(BaseModel):
+    page: int
+    limit: int
+    total: int
+    total_pages: int
+    has_more: bool
+
+
+class WorkerEarningsResponse(BaseModel):
+    items: list[WorkerEarningItem]
+    pagination: PaginationMeta
 
 
 class WorkerDashboardResponse(BaseModel):

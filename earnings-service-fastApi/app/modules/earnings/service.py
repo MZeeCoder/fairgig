@@ -1,4 +1,5 @@
 from datetime import date
+from math import ceil
 
 from beanie import PydanticObjectId
 
@@ -8,7 +9,10 @@ from app.modules.earnings.schemas import (
     BenchmarkMetrics,
     EarningTrendItem,
     PlatformBreakdownItem,
+    PaginationMeta,
     SummaryMetrics,
+    WorkerEarningItem,
+    WorkerEarningsResponse,
     WorkerDashboardResponse,
 )
 
@@ -36,6 +40,56 @@ class EarningsService:
             {"worker_id": PydanticObjectId(worker_id)},
         )
         return sorted(platforms)
+
+    @staticmethod
+    def _serialize_earning_document(document: dict) -> WorkerEarningItem:
+        return WorkerEarningItem(
+            id=str(document.get("_id", "")),
+            worker_id=str(document.get("worker_id", "")),
+            platform=str(document.get("platform", "")),
+            date=document.get("date"),
+            hours_worked=float(document.get("hours_worked", 0.0) or 0.0),
+            gross_earned=float(document.get("gross_earned", 0.0) or 0.0),
+            deduction=float(document.get("deduction", 0.0) or 0.0),
+            net_received=float(document.get("net_received", 0.0) or 0.0),
+            screenshot_url=str(document.get("screenshot_url", "")),
+            status=document.get("status", "pending"),
+        )
+
+    @staticmethod
+    async def get_worker_earnings(
+        worker_id: str,
+        page: int = 1,
+        limit: int = 10,
+    ) -> WorkerEarningsResponse:
+        worker_object_id = PydanticObjectId(worker_id)
+        collection = Earnings.get_motor_collection()
+
+        query_filter = {"worker_id": worker_object_id}
+        total = await collection.count_documents(query_filter)
+
+        skip = (page - 1) * limit
+        cursor = (
+            collection.find(query_filter)
+            .sort([("date", -1), ("_id", -1)])
+            .skip(skip)
+            .limit(limit)
+        )
+        documents = await cursor.to_list(length=limit)
+
+        items = [EarningsService._serialize_earning_document(document) for document in documents]
+        total_pages = ceil(total / limit) if total else 0
+
+        return WorkerEarningsResponse(
+            items=items,
+            pagination=PaginationMeta(
+                page=page,
+                limit=limit,
+                total=total,
+                total_pages=total_pages,
+                has_more=page < total_pages,
+            ),
+        )
 
     @staticmethod
     async def _resolve_worker_city_zone(worker_object_id: PydanticObjectId) -> str | None:
