@@ -31,7 +31,9 @@ routes(app);
 
 app.use(globalError);
 
-const PORT = config.PORT || 5000;
+const PORT = config.PORT || 5000;callback(null, true);
+      return;
+    }
 
 const startServer = async () => {
   try {

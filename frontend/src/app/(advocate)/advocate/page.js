@@ -1,3 +1,11 @@
+"use client";
+
+import RouteGuard from "@/components/RouteGuard";
+
 export default function AdvocatePage() {
-  return <div>Advocate Dashboard</div>;
+  return (
+    <RouteGuard allowedRoles={["advocate"]}>
+      <div>Advocate Dashboard</div>
+    </RouteGuard>
+  );
 }
