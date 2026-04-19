@@ -25,11 +25,9 @@ services:
         sync: false
   - type: web
     name: fairgig-earnings-fastapi
-    runtime: python
+    runtime: docker
     rootDir: earnings-service-fastApi
     plan: free
-    buildCommand: pip install playwright && pip install -r requirements.txt && playwright install chromium
-    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /
     autoDeploy: true
     envVars:
