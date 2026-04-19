@@ -8,7 +8,6 @@ const userRouter = Router();
 
 userRouter.post(
   "/signup",
-  uploadDocuments,
   validate(signupSchema),
   UserController.signup,
 );
