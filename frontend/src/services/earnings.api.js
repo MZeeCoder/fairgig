@@ -45,7 +45,7 @@ export const detectAnomaly = async (newEarningId) => {
 
 export const detectBulkAnomalies = async (earningIds) => {
   try {
-    const res = await fastApi.post("/anomaly/detect/bulk", {
+    const res = await anomalyApi.post("/anomaly/detect/bulk", {
       earning_ids: earningIds,
     });
     return res.data;
