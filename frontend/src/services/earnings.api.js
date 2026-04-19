@@ -43,6 +43,21 @@ export const detectAnomaly = async (newEarningId) => {
   }
 };
 
+export const detectBulkAnomalies = async (earningIds) => {
+  try {
+    const res = await fastApi.post("/anomaly/detect/bulk", {
+      earning_ids: earningIds,
+    });
+    return res.data;
+  } catch (error) {
+    console.error(
+      "Bulk Anomaly Detection Error:",
+      error?.response?.data || error.message,
+    );
+    throw error;
+  }
+};
+
 export const fetchPlatforms = async () => {
   try {
     const res = await fastApi.get("/api/v1/earnings/analytics/platforms");

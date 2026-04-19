@@ -1,8 +1,10 @@
+from typing import List
 from beanie import PydanticObjectId
 from fastapi import HTTPException, Request
 
 from app.modules.anomaly_detection.schemas import (
     AnomalyDetectRequest,
+    AnomalyDetectBulkRequest,
     AnomalyDetectResponse,
 )
 from app.modules.anomaly_detection.service import AnomalyDetectionService
@@ -40,3 +42,37 @@ class AnomalyDetectionController:
             raise HTTPException(status_code=400, detail=str(exc)) from exc
         except LookupError as exc:
             raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+    @staticmethod
+    async def detect_bulk_anomaly(
+        request: Request,
+        payload: AnomalyDetectBulkRequest,
+    ) -> List[AnomalyDetectResponse]:
+        worker_id = getattr(request.state, "worker_id", None)
+        if not worker_id:
+            raise HTTPException(status_code=401, detail="Unauthorized")
+
+        responses = []
+        for earning_id in payload.earning_ids:
+            try:
+                result = await AnomalyDetectionService.detect(
+                    new_earning_id=earning_id,
+                    worker_id=worker_id,
+                )
+
+                if result.get("is_anomaly"):
+                    earning = await Earnings.find_one(
+                        Earnings.id == PydanticObjectId(earning_id),
+                        Earnings.worker_id == PydanticObjectId(worker_id),
+                    )
+                    if earning:
+                        earning.anomaly_explanation = result.get("explanation")
+                        earning.status = EarningsStatus.FLAGGED
+                        await earning.save()
+
+                responses.append(AnomalyDetectResponse(**result))
+            except (ValueError, LookupError):
+                # Skip invalid or missing IDs during bulk processing
+                continue
+
+        return responses

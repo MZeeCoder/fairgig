@@ -25,6 +25,7 @@ import LogShiftModal from "./LogShiftModal";
 import toast from "react-hot-toast";
 import {
   detectAnomaly,
+  detectBulkAnomalies,
   fetchHistory,
   bulkUploadEarnings,
 } from "@/services/earnings.api";
@@ -202,9 +203,18 @@ export default function WorkerDashboard() {
 
       const response = await bulkUploadEarnings(file);
 
-      const successMsg = `Success: ${response.message || "File uploaded."}`;
+      // Extract newly created earning IDs properly
+      const newEarningIds = response?.new_ids || (response?.items && response.items.map(i => i?._id || i?.id)) || [];
+
+      // Call bulk anomaly detection
+      if (newEarningIds.length > 0) {
+        toast.loading("Detecting anomalies, please wait...", { id: toastId });
+        await detectBulkAnomalies(newEarningIds);
+      }
+
+      const successMsg = `Success: ${response.message || "File uploaded and analyzed."}`;
       setUploadSuccess(successMsg);
-      toast.success("File uploaded successfully!", { id: toastId });
+      toast.success("File uploaded and analyzed successfully!", { id: toastId });
 
       // Refresh history logic to see new entries immediately
       const res = await fetchHistory();
