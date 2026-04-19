@@ -49,7 +49,7 @@ export default function LoginPage() {
 
       const roleRouteMap = {
         worker: "/worker/dashboard",
-        verifier: "/verifier/dashboard",
+        verifier: "/verifier",
         advocate: "/advocate/dashboard",
       };
 

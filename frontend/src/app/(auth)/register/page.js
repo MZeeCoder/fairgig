@@ -102,7 +102,7 @@ export default function RegisterPage() {
         toast.success("Registration successful!");
         const roleRouteMap = {
           worker: "/worker/dashboard",
-          verifier: "/verifier/dashboard",
+          verifier: "/verifier",
           advocate: "/advocate/dashboard",
         };
         router.push(roleRouteMap[user.role] || "/unauthorized");
