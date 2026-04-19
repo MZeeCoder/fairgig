@@ -26,7 +26,6 @@ export const staffSchema = registerSchema.extend({
   role: z.enum(["verifier", "advocate"], {
     errorMap: () => ({ message: "Please select a valid staff role." }),
   }),
-  documents: z.array(z.any()).min(1, "Please upload at least one verification document."),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords do not match.",
   path: ["confirmPassword"],
