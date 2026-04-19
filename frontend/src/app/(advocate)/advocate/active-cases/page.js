@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Loader2, ShieldAlert, MessageSquare, CheckCircle, Clock, TrendingUp, MapPin } from "lucide-react";
+import toast from "react-hot-toast";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import { fetchGrievances, resolveGrievance, fetchCommissionTrend, fetchVolatility, getComplaintById } from "@/services/advocate.api";
 
@@ -32,25 +33,10 @@ export default function AdvocateDashboard() {
 
   useEffect(() => {
     loadCases();
-    loadAnalytics();
+   
   }, []);
 
-  const loadAnalytics = async () => {
-    const trendRes = await fetchCommissionTrend("Uber");
-    if (trendRes?.success && trendRes.data?.trend) {
-      setTrendData(trendRes.data.trend.map(t => ({
-        name: t.date.slice(5), // mm-dd
-        commission: t.total_gross_earned || 0
-      })));
-    }
-    const volRes = await fetchVolatility("Lahore");
-    if (volRes?.success && volRes.data?.volatility) {
-      setCityData(volRes.data.volatility.map(v => ({
-        name: v.zone || "Unknown",
-        commission: v.median_net_received || 0
-      })));
-    }
-  };
+ 
 
   const loadCases = async () => {
     setIsLoading(true);
@@ -80,17 +66,23 @@ export default function AdvocateDashboard() {
   const handleUpdateStatus = async (newStatus) => {
     if (!selectedCase) return;
     setIsSaving(true);
+    const toastId = toast.loading("Updating case status...");
     
-    await resolveGrievance(selectedCase.id, newStatus, advocateNotes);
-    
-    // Update local state
-    const updatedCases = cases.map(c => 
-      c.id === selectedCase.id ? { ...c, status: newStatus, notes: advocateNotes } : c
-    );
-    setCases(updatedCases);
-    setSelectedCase({ ...selectedCase, status: newStatus, notes: advocateNotes });
-    
-    setIsSaving(false);
+    try {
+      await resolveGrievance(selectedCase.id, newStatus, advocateNotes);
+      
+      // Update local state
+      const updatedCases = cases.map(c => 
+        c.id === selectedCase.id ? { ...c, status: newStatus, notes: advocateNotes } : c
+      );
+      setCases(updatedCases);
+      setSelectedCase({ ...selectedCase, status: newStatus, notes: advocateNotes });
+      toast.success("Case status updated dynamically!", { id: toastId });
+    } catch (error) {
+      toast.error("Failed to update case status.", { id: toastId });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -105,7 +97,18 @@ export default function AdvocateDashboard() {
 
         <div className="flex-1 overflow-y-auto p-3 space-y-2 bg-slate-50">
           {isLoading ? (
-            <div className="flex justify-center p-8"><Loader2 className="w-6 h-6 animate-spin text-teal-600" /></div>
+            <div className="space-y-3">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <div key={i} className="p-4 rounded-xl border border-slate-200 bg-white animate-pulse">
+                  <div className="flex justify-between items-start mb-3">
+                    <div className="h-4 bg-slate-200 rounded w-16"></div>
+                    <div className="h-5 bg-slate-200 rounded-full w-20"></div>
+                  </div>
+                  <div className="h-4 bg-slate-200 rounded w-3/4 mb-2"></div>
+                  <div className="h-3 bg-slate-200 rounded w-1/2 mt-1"></div>
+                </div>
+              ))}
+            </div>
           ) : cases.map((c) => (
             <div 
               key={c.id}
@@ -135,62 +138,7 @@ export default function AdvocateDashboard() {
 
       {/* Right Column: Case Workspace */}
       <div className="flex-1 overflow-y-auto p-8 bg-slate-50">
-        {!selectedCase ? (
-          <div className="h-full flex flex-col items-center justify-center space-y-8">
-            <h2 className="text-2xl font-bold text-slate-800">Analytics Dashboard</h2>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 w-full max-w-5xl">
-              
-              {/* Chart 1: Platform Analytics */}
-              <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col gap-4">
-                <div className="flex items-center gap-2">
-                  <div className="p-2 bg-indigo-50 rounded-lg">
-                    <TrendingUp className="w-5 h-5 text-indigo-600" />
-                  </div>
-                  <h3 className="font-bold text-slate-900">Commission Trend for {platformConfig} (30 Days)</h3>
-                </div>
-                <div className="flex-1">
-                  <ResponsiveContainer width="100%" height={280}>
-                    <BarChart data={trendData} margin={{ top: 20, right: 0, left: 10, bottom: 0 }}>
-                      <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12, fontWeight: 500 }} dy={10} />
-                      <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }} tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`} dx={-10} />
-                      <Tooltip cursor={{ fill: 'transparent' }} content={<CustomTooltip />} />
-                      <Bar dataKey="commission" radius={[4, 4, 0, 0]}>
-                        {trendData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={index % 2 === 0 ? '#4f46e5' : '#818cf8'} />
-                        ))}
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
-
-              {/* Chart 2: City Analytics */}
-              <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col gap-4">
-                <div className="flex items-center gap-2">
-                  <div className="p-2 bg-teal-50 rounded-lg">
-                    <MapPin className="w-5 h-5 text-teal-600" />
-                  </div>
-                  <h3 className="font-bold text-slate-900">Median Earnings by Zone ({cityConfig})</h3>
-                </div>
-                <div className="flex-1">
-                  <ResponsiveContainer width="100%" height={280}>
-                    <BarChart data={cityData} margin={{ top: 20, right: 0, left: 10, bottom: 0 }}>
-                      <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12, fontWeight: 500 }} dy={10} />
-                      <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }} tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`} dx={-10} />
-                      <Tooltip cursor={{ fill: 'transparent' }} content={<CustomTooltip />} />
-                      <Bar dataKey="commission" radius={[4, 4, 0, 0]}>
-                        {cityData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={index % 2 === 0 ? '#0d9488' : '#5eead4'} />
-                        ))}
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
-
-            </div>
-          </div>
-        ) : (
+        {selectedCase && (
           <div className="max-w-3xl mx-auto space-y-6">
             
             {/* Header */}

@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Loader2, Briefcase, Mail, Lock } from "lucide-react";
+import toast from "react-hot-toast";
 import { authSchemas } from "../../../schemas/auth.schema";
 import { loginUser } from "../../../services/auth.api";
 import useAuthStore from "../../../store/authStore";
@@ -44,6 +45,7 @@ export default function LoginPage() {
       }
 
       login(user, accessToken, refreshToken);
+      toast.success("Login successful!");
 
       const roleRouteMap = {
         worker: "/worker",
@@ -53,7 +55,9 @@ export default function LoginPage() {
 
       router.push(roleRouteMap[user.role] || "/unauthorized");
     } catch (err) {
-      setError(err?.response?.data?.message || err?.message || "Login failed. Please try again.");
+      const errorMessage = err?.response?.data?.message || err?.message || "Login failed. Please try again.";
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }

@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import Link from "next/link";
+import toast from "react-hot-toast";
 import { Scale, FolderOpen, LogOut, LayoutDashboard, Activity } from "lucide-react";
 
 export default function AdvocateLayout({ children }) {
@@ -11,6 +12,7 @@ export default function AdvocateLayout({ children }) {
     localStorage.clear();
     document.cookie = "accessToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
     document.cookie = "userRole=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    toast.success("Logged out successfully");
     window.location.href = "/login";
   };
 
@@ -60,7 +62,7 @@ export default function AdvocateLayout({ children }) {
             className="flex items-center gap-3 px-3 py-2.5 w-full rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
           >
             <LogOut className="w-5 h-5" />
-            Sign Out
+            Log Out
           </button>
         </div>
       </aside>

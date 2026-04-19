@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Search, Filter, Download, CheckCircle, AlertTriangle, XCircle, FileText, Loader2 } from "lucide-react";
 import { fetchHistoryShifts } from "@/services/verifier.api";
 import { exportAuditCSV } from "@/lib/exportCsv";
+import toast from "react-hot-toast";
 
 const StatusBadge = ({ status }) => {
   if (status === "Confirmed") {
@@ -46,6 +47,7 @@ export default function VerifierHistoryPage() {
       }
     } catch (err) {
       console.error("Failed to load history");
+      toast.error("Failed to load history.");
     } finally {
       setIsLoading(false);
     }
@@ -66,15 +68,22 @@ export default function VerifierHistoryPage() {
       <div className="flex items-center justify-between mb-8 shrink-0">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Reviewed Logs</h1>
-          <p className="text-sm text-slate-500 mt-1">Audit trail of all shift verifications processed by you.</p>
+          <p className="text-slate-500 text-sm mt-1">Audit trail of all shift verifications processed by you.</p>
         </div>
         
         <button 
-          onClick={() => exportAuditCSV(filteredHistory)}
+          onClick={() => {
+            try {
+              exportAuditCSV(filteredHistory);
+              toast.success("CSV Downloaded Successfully");
+            } catch (err) {
+              toast.error("Failed to download CSV");
+            }
+          }}
           className="flex items-center gap-2 bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 font-medium text-sm px-4 py-2 rounded-lg transition-colors shadow-sm"
         >
           <Download className="w-4 h-4" />
-          Export Audit CSV
+          Export CSV
         </button>
       </div>
 

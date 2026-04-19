@@ -72,38 +72,6 @@ export default function AdvocateAnalyticsPanel() {
       {/* Charts Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         
-
-
-        {/* Bar Chart (Horizontal) */}
-        <div className="bg-white p-6 border border-slate-200 rounded-xl shadow-sm hover:shadow-md transition-shadow lg:col-span-2">
-          <h2 className="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
-            <AlertOctagon className="w-5 h-5 text-amber-500" />
-            Top Complaint Categories (This Week)
-          </h2>
-          <div className="h-72 w-full">
-            {topComplaintsData.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={topComplaintsData} layout="vertical" margin={{ left: 50 }}>
-                  <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#e2e8f0" />
-                  <XAxis type="number" tick={{ fill: "#64748b" }} axisLine={false} tickLine={false} />
-                  <YAxis dataKey="category" type="category" tick={{ fill: "#475569", fontWeight: 500 }} width={120} axisLine={false} tickLine={false} />
-                  <Tooltip 
-                    cursor={{ fill: "#f8fafc" }}
-                    contentStyle={{ borderRadius: "8px", border: "none", boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)" }}
-                  />
-                  <Bar dataKey="count" radius={[0, 4, 4, 0]} barSize={32}>
-                    {topComplaintsData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={index === 0 ? "#e11d48" : index === 1 ? "#f59e0b" : "#4f46e5"} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="flex items-center justify-center h-full text-slate-400">No complaints data available</div>
-            )}
-          </div>
-        </div>
-
       </div>
 
       {/* Vulnerability Table */}

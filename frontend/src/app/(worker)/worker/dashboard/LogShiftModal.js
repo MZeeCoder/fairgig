@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Plus, CheckCircle, Upload, Loader2, X } from "lucide-react";
+import toast from "react-hot-toast";
 import { shiftSchema } from "@/schemas/worker.schema";
 import { submitShiftLog } from "@/services/earnings.api";
 
@@ -54,11 +55,14 @@ export default function LogShiftModal({ isOpen, onClose, onShiftAdded }) {
     }
 
     if (!screenshotFile) {
-      setErrors({ file: "Please upload a screenshot" });
+      const errorMsg = "Please upload a screenshot";
+      setErrors({ file: errorMsg });
+      toast.error(errorMsg);
       return;
     }
 
     setShiftLoading(true);
+    const toastId = toast.loading("Submitting shift log...");
 
     try {
       const data = new FormData();
@@ -79,9 +83,7 @@ export default function LogShiftModal({ isOpen, onClose, onShiftAdded }) {
         onShiftAdded(result.data);
       }
 
-      setSubmitted(true);
-      setFormData({ platform: "", city: "", city_zone: "", date: "", hours: "", gross: "", deductions: "", net: "" }); 
-      setScreenshotFile(null);
+      toast.success("Shift log submitted successfully!", { id: toastId });
       
       setTimeout(() => {
         setSubmitted(false);
@@ -89,6 +91,7 @@ export default function LogShiftModal({ isOpen, onClose, onShiftAdded }) {
       }, 2000);
     } catch (err) {
       console.error("Failed to submit shift", err);
+      toast.error(err?.response?.data?.message || err?.message || "Failed to submit shift log. Please try again.", { id: toastId });
     } finally {
       setShiftLoading(false);
     }

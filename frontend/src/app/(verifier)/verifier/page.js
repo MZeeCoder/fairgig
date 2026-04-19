@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Loader2, CheckCircle, AlertTriangle, XCircle, Search, Calendar, Clock, DollarSign, ShieldCheck } from "lucide-react";
 import { fetchPendingShifts, updateShiftStatus } from "@/services/verifier.api";
+import toast from "react-hot-toast";
 
 export default function VerifierQueuePage() {
   const [queue, setQueue] = useState([]);
@@ -33,6 +34,7 @@ export default function VerifierQueuePage() {
   const handleAction = async (status) => {
     if (!selectedShift) return;
     setActionLoading(status);
+    const toastId = toast.loading(`Marking as ${status}...`);
 
     try {
       await updateShiftStatus(selectedShift.id, status);
@@ -44,9 +46,9 @@ export default function VerifierQueuePage() {
       const updatedQueue = queue.filter(s => s.id !== selectedShift.id);
       setQueue(updatedQueue);
       setSelectedShift(updatedQueue.length > 0 ? updatedQueue[0] : null);
-
+      toast.success(`Marked as ${status}`, { id: toastId });
     } catch (err) {
-      alert("Action failed. Try again.");
+      toast.error("Action failed. Try again.", { id: toastId });
     } finally {
       setActionLoading(null);
     }

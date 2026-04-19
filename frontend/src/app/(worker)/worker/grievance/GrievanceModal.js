@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Loader2, ShieldAlert, CheckCircle, AlertCircle, X } from "lucide-react";
+import toast from "react-hot-toast";
 import { grievanceSchema } from "@/schemas/worker.schema";
 import { createGrievance } from "@/services/grievance.api";
 
@@ -36,10 +37,12 @@ export default function GrievanceModal({ isOpen, onClose, onSuccess }) {
     }
 
     setIsLoading(true);
+    const toastId = toast.loading("Submitting report...");
     try {
       await createGrievance(validationResult.data);
       setSubmitted(true);
       setFormData({ platform: "", category: "", description: "" });
+      toast.success("Report submitted securely!", { id: toastId });
 
       if (onSuccess) onSuccess();
 
@@ -49,9 +52,9 @@ export default function GrievanceModal({ isOpen, onClose, onSuccess }) {
       }, 2000);
     } catch (err) {
       console.error(err);
-      setErrors({
-        form: err?.response?.data?.message || "An error occurred while submitting.",
-      });
+      const errorMessage = err?.response?.data?.message || "An error occurred while submitting.";
+      setErrors({ form: errorMessage });
+      toast.error(errorMessage, { id: toastId });
     } finally {
       setIsLoading(false);
     }

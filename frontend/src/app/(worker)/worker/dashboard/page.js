@@ -20,6 +20,7 @@ import {
 import Link from "next/link";
 
 import LogShiftModal from "./LogShiftModal";
+import toast from "react-hot-toast";
 import {
   detectAnomaly,
   fetchHistory,
@@ -129,6 +130,7 @@ export default function WorkerDashboard() {
   const handleShiftAdded = (newShift) => {
     // Add the new shift at the top of the table locally
     setShiftLogs((prev) => [newShift, ...prev]);
+    toast.success("Shift logged successfully!");
 
     const earningId = newShift?._id || newShift?.id;
     if (!earningId) return;
@@ -168,16 +170,21 @@ export default function WorkerDashboard() {
     setUploadSuccess("");
 
     if (!file.name.endsWith(".csv")) {
-      setUploadError("Please upload a valid CSV file.");
+      const msg = "Please upload a valid CSV file.";
+      setUploadError(msg);
+      toast.error(msg);
       return;
     }
 
+    const toastId = toast.loading("Uploading file, please wait...");
     try {
       setUploadSuccess("Uploading file, please wait...");
 
       const response = await bulkUploadEarnings(file);
 
-      setUploadSuccess(`Success: ${response.message || "File uploaded."}`);
+      const successMsg = `Success: ${response.message || "File uploaded."}`;
+      setUploadSuccess(successMsg);
+      toast.success("File uploaded successfully!", { id: toastId });
 
       // Refresh history logic to see new entries immediately
       const res = await fetchHistory();
@@ -187,11 +194,11 @@ export default function WorkerDashboard() {
         setShiftLogs(res);
       }
     } catch (error) {
-      setUploadError(
-        error?.response?.data?.detail ||
+      const errorMsg = error?.response?.data?.detail ||
           error.message ||
-          "Something went wrong while uploading the file.",
-      );
+          "Something went wrong while uploading the file.";
+      setUploadError(errorMsg);
+      toast.error(errorMsg, { id: toastId });
       setUploadSuccess(""); // clear the uploading message
     }
 

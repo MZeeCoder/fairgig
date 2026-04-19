@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
+import toast from "react-hot-toast";
 import { deleteAuthCookies } from "@/app/actions";
 import { LayoutDashboard, History, MessageSquareWarning, LogOut, Briefcase } from "lucide-react";
 
@@ -14,6 +15,7 @@ export default function WorkerLayout({ children }) {
   const handleLogout = async () => {
     localStorage.clear();
     await deleteAuthCookies();
+    toast.success("Logged out successfully");
     window.location.href = "/login";
   };
 

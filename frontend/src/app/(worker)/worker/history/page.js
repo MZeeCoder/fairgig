@@ -9,6 +9,7 @@ import {
 } from "../../../../services/earnings.api";
 import { dashboardFilterSchema } from "@/schemas/worker.schema";
 import AnalyticsModal from "./AnalyticsModal";
+import toast from "react-hot-toast";
 
 export default function HistoryPage() {
   const [platforms, setPlatforms] = useState([]);
@@ -56,6 +57,7 @@ export default function HistoryPage() {
     }
 
     setIsLoading(true);
+    const toastId = toast.loading("Generating analytics...");
     setDashboardData(null);
     try {
       const res = await fetchWorkerDashboard({
@@ -65,10 +67,11 @@ export default function HistoryPage() {
       });
       setDashboardData(res.data || res);
       // Open modal right away once generated successfully
+      toast.success("Analytics generated successfully!", { id: toastId });
       setIsModalOpen(true);
     } catch (error) {
       console.error("Failed to generate analytics", error);
-      alert("Failed to fetch analytics data.");
+      toast.error("Failed to fetch analytics data.", { id: toastId });
     } finally {
       setIsLoading(false);
     }
@@ -76,6 +79,7 @@ export default function HistoryPage() {
 
   const handleDownloadPdf = async () => {
     setIsDownloadingPdf(true);
+    const toastId = toast.loading("Generating your official certificate...");
     try {
       const res = await downloadWorkerDashboardPdf({
         platform: selectedPlatform || undefined,
@@ -96,9 +100,11 @@ export default function HistoryPage() {
       link.click();
       link.remove();
       window.URL.revokeObjectURL(url);
+      
+      toast.success("Certificate downloaded successfully!", { id: toastId });
     } catch (error) {
       console.error("Failed to download analytics PDF", error);
-      alert("Failed to download PDF report.");
+      toast.error("Failed to download PDF report.", { id: toastId });
     } finally {
       setIsDownloadingPdf(false);
     }
