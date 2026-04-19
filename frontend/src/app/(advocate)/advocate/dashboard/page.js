@@ -8,26 +8,26 @@ import { fetchCommissionTrend, fetchVolatility, fetchGrievances, fetchAnalytics 
 
 
 
+const CustomTooltip = ({ active, payload, label }) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-slate-900 text-white text-xs py-2 px-3 rounded-md shadow-xl border border-slate-700">
+        <p className="font-semibold mb-1 opacity-90">{label}</p>
+        <p className="flex items-center gap-1.5">
+          <span className="w-2 h-2 rounded-full" style={{ backgroundColor: payload[0].fill }}></span>
+          Commission: <span className="font-bold opacity-100">{payload[0].value.toLocaleString()} PKR</span>
+        </p>
+      </div>
+    );
+  }
+  return null;
+};
+
 export default function AdvocateDashboardPage() {
   const [trendData, setTrendData] = useState([]);
   const [cityData, setCityData] = useState([]);
   const [activeCases, setActiveCases] = useState(0);
   const [topComplaintsData, setTopComplaintsData] = useState([]);
-
-  const CustomTooltip = ({ active, payload, label }) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="bg-slate-900 text-white text-xs py-2 px-3 rounded-md shadow-xl border border-slate-700">
-          <p className="font-semibold mb-1 opacity-90">{label}</p>
-          <p className="flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: payload[0].fill }}></span>
-            Commission: <span className="font-bold opacity-100">{payload[0].value.toLocaleString()} PKR</span>
-          </p>
-        </div>
-      );
-    }
-    return null;
-  };
 
   useEffect(() => {
     loadAnalytics();
