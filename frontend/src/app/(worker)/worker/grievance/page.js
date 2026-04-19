@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Loader2, Plus } from "lucide-react";
+import { Loader2, Plus, ChevronLeft, ChevronRight } from "lucide-react";
 import { getUserGrievances } from "@/services/grievance.api";
 import GrievanceModal from "./GrievanceModal";
 
@@ -11,6 +11,15 @@ export default function GrievancePage() {
   const [userId, setUserId] = useState(null);
   const [fetchError, setFetchError] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 8;
+  const totalPages = Math.ceil(grievances.length / itemsPerPage);
+
+  const paginatedGrievances = grievances.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
@@ -116,7 +125,7 @@ export default function GrievancePage() {
                 </td>
               </tr>
             ) : (
-              grievances.map((g) => (
+              paginatedGrievances.map((g) => (
                 <tr key={g._id} className="hover:bg-slate-50">
                   <td className="px-6 py-4 text-sm text-slate-600 truncate max-w-[100px]">
                     {new Date(g.createdAt || Date.now()).toLocaleDateString()}
@@ -135,6 +144,30 @@ export default function GrievancePage() {
           </tbody>
         </table>
       </div>
+
+      {totalPages > 1 && (
+        <div className="flex justify-between items-center mt-6">
+          <button
+            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+            disabled={currentPage === 1}
+            className="flex items-center gap-1.5 px-4 py-2 border border-slate-200 bg-white rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
+          >
+            <ChevronLeft className="w-4 h-4" />
+            Previous
+          </button>
+          <span className="text-sm font-medium text-slate-600">
+            Page {currentPage} of {totalPages}
+          </span>
+          <button
+            onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+            disabled={currentPage === totalPages}
+            className="flex items-center gap-1.5 px-4 py-2 border border-slate-200 bg-white rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
+          >
+            Next
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
+      )}
     </main>
   );
 }

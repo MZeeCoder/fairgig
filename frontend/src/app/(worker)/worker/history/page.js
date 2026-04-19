@@ -207,7 +207,7 @@ export default function HistoryPage() {
           <div className="pt-4 flex justify-end">
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={isLoading || !startDate || !endDate || !selectedPlatform}
               className="flex items-center gap-2 bg-teal-600 text-white hover:bg-teal-700 font-medium px-6 py-3 rounded-xl transition-colors disabled:opacity-70 disabled:cursor-not-allowed shadow-sm"
             >
               {isLoading ? (
