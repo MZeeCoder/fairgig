@@ -193,24 +193,15 @@ class EarningsPdfService:
         start_date: str | None,
         end_date: str | None,
     ) -> bytes:
-        async_playwright = importlib.import_module("playwright.async_api").async_playwright
-
-        html = EarningsPdfService._build_html(
+        from weasyprint import HTML
+        
+        html_str = EarningsPdfService._build_html(
             dashboard=dashboard,
             platform=platform,
             start_date=start_date,
             end_date=end_date,
         )
 
-        async with async_playwright() as playwright:
-            browser = await playwright.chromium.launch()
-            page = await browser.new_page()
-            await page.set_content(html, wait_until="networkidle")
-            pdf_bytes = await page.pdf(
-                format="A4",
-                print_background=True,
-                margin={"top": "20mm", "right": "12mm", "bottom": "20mm", "left": "12mm"},
-            )
-            await browser.close()
+        pdf_bytes = HTML(string=html_str).write_pdf()
 
         return pdf_bytes

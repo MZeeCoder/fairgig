@@ -25,9 +25,11 @@ services:
         sync: false
   - type: web
     name: fairgig-earnings-fastapi
-    runtime: docker
+    runtime: python
     rootDir: earnings-service-fastApi
     plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /
     autoDeploy: true
     envVars:
