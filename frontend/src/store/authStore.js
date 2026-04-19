@@ -5,12 +5,9 @@ import { clearClientAuth, setClientAuth } from "@/lib/clientAuth";
 const useAuthStore = create((set) => ({
   user: null,
 
-  // Action to log in the user
   login: (userData, accessToken, refreshToken) => {
-    // Set user state
     set({ user: userData });
 
-    // Store accessToken in localStorage and refreshToken in cookies
     setClientAuth({ accessToken, userRole: userData.role });
     if (refreshToken) {
       Cookies.set("refreshToken", refreshToken, { expires: 7 });
