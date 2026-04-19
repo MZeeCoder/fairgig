@@ -1,8 +1,23 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Loader2, ShieldAlert, MessageSquare, CheckCircle, Clock } from "lucide-react";
-import { fetchGrievances, resolveGrievance, getComplaintById } from "@/services/advocate.api";
+import { Loader2, ShieldAlert, MessageSquare, CheckCircle, Clock, TrendingUp, MapPin } from "lucide-react";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
+import { fetchGrievances, resolveGrievance, fetchCommissionTrend, fetchVolatility, getComplaintById } from "@/services/advocate.api";
+
+const CustomTooltip = ({ active, payload, label }) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-white p-3 rounded-lg shadow-md border border-slate-100 flex flex-col gap-1">
+        <p className="text-slate-500 font-medium text-xs">{label}</p>
+        <p className="font-bold text-slate-800 text-sm">
+          PKR {payload[0].value.toLocaleString()}
+        </p>
+      </div>
+    );
+  }
+  return null;
+};
 
 export default function AdvocateDashboard() {
   const [cases, setCases] = useState([]);
@@ -10,10 +25,32 @@ export default function AdvocateDashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [advocateNotes, setAdvocateNotes] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  const [platformConfig, setPlatformConfig] = useState("Uber");
+  const [cityConfig, setCityConfig] = useState("Lahore");
+  const [trendData, setTrendData] = useState([]);
+  const [cityData, setCityData] = useState([]);
 
   useEffect(() => {
     loadCases();
+    loadAnalytics();
   }, []);
+
+  const loadAnalytics = async () => {
+    const trendRes = await fetchCommissionTrend("Uber");
+    if (trendRes?.success && trendRes.data?.trend) {
+      setTrendData(trendRes.data.trend.map(t => ({
+        name: t.date.slice(5), // mm-dd
+        commission: t.total_gross_earned || 0
+      })));
+    }
+    const volRes = await fetchVolatility("Lahore");
+    if (volRes?.success && volRes.data?.volatility) {
+      setCityData(volRes.data.volatility.map(v => ({
+        name: v.zone || "Unknown",
+        commission: v.median_net_received || 0
+      })));
+    }
+  };
 
   const loadCases = async () => {
     setIsLoading(true);
@@ -99,7 +136,60 @@ export default function AdvocateDashboard() {
       {/* Right Column: Case Workspace */}
       <div className="flex-1 overflow-y-auto p-8 bg-slate-50">
         {!selectedCase ? (
-          <div className="h-full flex items-center justify-center text-slate-400">Select a case to review</div>
+          <div className="h-full flex flex-col items-center justify-center space-y-8">
+            <h2 className="text-2xl font-bold text-slate-800">Analytics Dashboard</h2>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 w-full max-w-5xl">
+              
+              {/* Chart 1: Platform Analytics */}
+              <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col gap-4">
+                <div className="flex items-center gap-2">
+                  <div className="p-2 bg-indigo-50 rounded-lg">
+                    <TrendingUp className="w-5 h-5 text-indigo-600" />
+                  </div>
+                  <h3 className="font-bold text-slate-900">Commission Trend for {platformConfig} (30 Days)</h3>
+                </div>
+                <div className="flex-1">
+                  <ResponsiveContainer width="100%" height={280}>
+                    <BarChart data={trendData} margin={{ top: 20, right: 0, left: 10, bottom: 0 }}>
+                      <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12, fontWeight: 500 }} dy={10} />
+                      <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }} tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`} dx={-10} />
+                      <Tooltip cursor={{ fill: 'transparent' }} content={<CustomTooltip />} />
+                      <Bar dataKey="commission" radius={[4, 4, 0, 0]}>
+                        {trendData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={index % 2 === 0 ? '#4f46e5' : '#818cf8'} />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
+              {/* Chart 2: City Analytics */}
+              <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col gap-4">
+                <div className="flex items-center gap-2">
+                  <div className="p-2 bg-teal-50 rounded-lg">
+                    <MapPin className="w-5 h-5 text-teal-600" />
+                  </div>
+                  <h3 className="font-bold text-slate-900">Median Earnings by Zone ({cityConfig})</h3>
+                </div>
+                <div className="flex-1">
+                  <ResponsiveContainer width="100%" height={280}>
+                    <BarChart data={cityData} margin={{ top: 20, right: 0, left: 10, bottom: 0 }}>
+                      <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12, fontWeight: 500 }} dy={10} />
+                      <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }} tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`} dx={-10} />
+                      <Tooltip cursor={{ fill: 'transparent' }} content={<CustomTooltip />} />
+                      <Bar dataKey="commission" radius={[4, 4, 0, 0]}>
+                        {cityData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={index % 2 === 0 ? '#0d9488' : '#5eead4'} />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
+            </div>
+          </div>
         ) : (
           <div className="max-w-3xl mx-auto space-y-6">
             

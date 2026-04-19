@@ -217,6 +217,40 @@ class AdvocateController {
       return next(error);
     }
   }
+  static async getAnalyticsDashboard(req, res, next) {
+    try {
+      const role = req.user?.role;
+
+      if (role !== "advocate" && role !== "admin") {
+        throw new ApiError(
+          403,
+          "Only advocate or admin can access analytics",
+        );
+      }
+
+      const [topComplaints, incomeByCity, commissionTrend, vulnerableWorkers] = await Promise.all([
+        AdvocateService.getTopComplaints(),
+        AdvocateService.getIncomeByCity(),
+        AdvocateService.getCommissionTrend(),
+        AdvocateService.getVulnerableWorkers()
+      ]);
+
+      return ApiResponse.success(
+        res,
+        "Analytics Dashboard metrics fetched successfully",
+        200,
+        {
+          topComplaints,
+          incomeByCity,
+          commissionTrend,
+          vulnerableWorkers
+        }
+      );
+    } catch (error) {
+      return next(error);
+    }
+  }
+
 }
 
 export default AdvocateController;

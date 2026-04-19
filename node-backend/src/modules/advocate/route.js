@@ -20,6 +20,11 @@ advocateRouter.patch(
   AdvocateController.escalateOpenGrievance,
 );
 advocateRouter.get(
+  "/analytics",
+  auth,
+  AdvocateController.getAnalyticsDashboard,
+);
+advocateRouter.get(
   "/analytics/commission-trend",
   auth,
   AdvocateController.getCommissionTrendLast30Days,

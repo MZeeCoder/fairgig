@@ -455,6 +455,306 @@ class AdvocateService {
       volatility,
     };
   }
+  static async getTopComplaints() {
+    const topComplaints = await Grievance.aggregate([
+      {
+        $group: {
+          _id: "$category",
+          count: { $sum: 1 },
+        },
+      },
+      {
+        $sort: { count: -1 },
+      },
+      {
+        $limit: 5,
+      },
+      {
+        $project: {
+          category: "$_id",
+          count: 1,
+          _id: 0,
+        },
+      },
+    ]);
+    return topComplaints;
+  }
+
+  static async getIncomeByCity() {
+    const db = mongoose.connection.db;
+    const earningsCollection = db.collection("earnings");
+
+    const incomeByCity = await earningsCollection
+      .aggregate([
+        {
+          $match: {
+            status: "approved", // Assuming "approved" or confirmed
+          },
+        },
+        {
+          $group: {
+            _id: "$city",
+            value: { $sum: "$net_received" },
+          },
+        },
+        {
+          $project: {
+            name: { $ifNull: ["$_id", "Unknown"] },
+            value: 1,
+            _id: 0,
+          },
+        },
+        {
+          $match: {
+            name: { $ne: "Unknown" }
+          }
+        },
+        {
+          $sort: { value: -1 }
+        }
+      ])
+      .toArray();
+      
+    // Default fallback to show something matching the charts if data is completely empty
+    if (incomeByCity.length === 0) {
+      return [
+        { name: "Lahore", value: 0 },
+        { name: "Karachi", value: 0 },
+        { name: "Islamabad", value: 0 },
+        { name: "Rawalpindi", value: 0 },
+      ];
+    }
+    
+    return incomeByCity;
+  }
+
+  static async getCommissionTrend() {
+    const db = mongoose.connection.db;
+    const earningsCollection = db.collection("earnings");
+
+    const sixMonthsAgo = new Date();
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+
+    const trendQuery = await earningsCollection
+      .aggregate([
+        {
+          $addFields: {
+            parsedDate: {
+              $switch: {
+                branches: [
+                  {
+                    case: { $eq: [{ $type: "$date" }, "date"] },
+                    then: "$date",
+                  },
+                  {
+                    case: { $eq: [{ $type: "$date" }, "string"] },
+                    then: {
+                      $dateFromString: {
+                        dateString: "$date",
+                        onError: null,
+                        onNull: null,
+                      },
+                    },
+                  },
+                ],
+                default: null,
+              }
+            },
+            grossValue: {
+              $convert: {
+                input: "$gross_earned",
+                to: "double",
+                onError: 0,
+                onNull: 0,
+              },
+            },
+            deductionValue: {
+              $convert: {
+                input: "$deduction",
+                to: "double",
+                onError: 0,
+                onNull: 0,
+              },
+            },
+          }
+        },
+        {
+          $match: {
+            parsedDate: { $gte: sixMonthsAgo },
+          },
+        },
+        {
+          $group: {
+            _id: {
+              platform: "$platform",
+              month: { $month: "$parsedDate" },
+              year: { $year: "$parsedDate" }
+            },
+            total_gross: { $sum: "$grossValue" },
+            total_deduction: { $sum: "$deductionValue" },
+          },
+        },
+        {
+          $project: {
+            platform: "$_id.platform",
+            monthNum: "$_id.month",
+            year: "$_id.year",
+            commissionRate: {
+              $cond: [
+                { $gt: ["$total_gross", 0] },
+                { $round: [{ $multiply: [{ $divide: ["$total_deduction", "$total_gross"] }, 100] }, 1] },
+                0
+              ]
+            }
+          }
+        },
+        { $sort: { year: 1, monthNum: 1 } }
+      ])
+      .toArray();
+
+    // Map month numbers to short names
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    
+    // Process data to fit Recharts line chart formatting
+    const formattedDataMap = new Map();
+    
+    trendQuery.forEach(row => {
+      if (!row.monthNum) return; // Skip if null date
+      const monthStr = monthNames[row.monthNum - 1];
+      if (!formattedDataMap.has(monthStr)) {
+        formattedDataMap.set(monthStr, { month: monthStr });
+      }
+      
+      const record = formattedDataMap.get(monthStr);
+      record[row.platform || 'Unknown'] = row.commissionRate;
+    });
+
+    return Array.from(formattedDataMap.values());
+  }
+
+  static async getVulnerableWorkers() {
+    const db = mongoose.connection.db;
+    const earningsCollection = db.collection("earnings");
+
+    const currentMonthDate = new Date();
+    const currentMonth = currentMonthDate.getMonth() + 1;
+    const currentYear = currentMonthDate.getFullYear();
+
+    const previousMonthDate = new Date();
+    previousMonthDate.setMonth(previousMonthDate.getMonth() - 1);
+    const previousMonth = previousMonthDate.getMonth() + 1;
+    const previousYear = previousMonthDate.getFullYear();
+
+    const earningsQuery = await earningsCollection
+      .aggregate([
+        {
+          $addFields: {
+            parsedDate: {
+              $switch: {
+                branches: [
+                  {
+                    case: { $eq: [{ $type: "$date" }, "date"] },
+                    then: "$date",
+                  },
+                  {
+                    case: { $eq: [{ $type: "$date" }, "string"] },
+                    then: {
+                      $dateFromString: {
+                        dateString: "$date",
+                        onError: null,
+                        onNull: null,
+                      },
+                    },
+                  },
+                ],
+                default: null,
+              }
+            },
+            netValue: {
+              $convert: {
+                input: "$net_received",
+                to: "double",
+                onError: 0,
+                onNull: 0,
+              },
+            },
+          }
+        },
+        {
+          $match: {
+            parsedDate: { 
+              $gte: new Date(previousYear, previousMonth - 1, 1),
+              $lte: new Date(currentYear, currentMonth, 0)
+            }
+          },
+        },
+        {
+          $group: {
+            _id: {
+              worker_id: "$worker_id",
+              platform: "$platform",
+              isCurrentMonth: { 
+                $and: [
+                  { $eq: [{ $month: "$parsedDate" }, currentMonth] },
+                  { $eq: [{ $year: "$parsedDate" }, currentYear] }
+                ]
+              }
+            },
+            totalNet: { $sum: "$netValue" }
+          }
+        },
+        {
+          $group: {
+            _id: { worker_id: "$_id.worker_id", platform: "$_id.platform" },
+            previousMonthIncome: {
+              $sum: { $cond: [{ $eq: ["$_id.isCurrentMonth", false] }, "$totalNet", 0] }
+            },
+            currentMonthIncome: {
+              $sum: { $cond: [{ $eq: ["$_id.isCurrentMonth", true] }, "$totalNet", 0] }
+            }
+          }
+        },
+        {
+          $lookup: {
+            from: "users",
+            localField: "_id.worker_id",
+            foreignField: "_id",
+            as: "workerData"
+          }
+        },
+        {
+          $unwind: { path: "$workerData", preserveNullAndEmptyArrays: true }
+        }
+      ])
+      .toArray();
+
+    // Filter for >20% drop using JS calculation
+    const vulnerable = [];
+    
+    earningsQuery.forEach((row) => {
+      const prev = row.previousMonthIncome;
+      const curr = row.currentMonthIncome;
+      
+      if (prev > 0) {
+        const dropPercent = Math.round(((prev - curr) / prev) * 100);
+        if (dropPercent >= 20) {
+          vulnerable.push({
+            id: row.workerData ? row.workerData._id.toString().substring(18) : row._id.worker_id.toString().substring(18),
+            worker_id: row._id.worker_id,
+            name: row.workerData ? row.workerData.name : "Unknown Worker",
+            platform: row._id.platform || "Unknown",
+            previousMonth: prev,
+            currentMonth: curr,
+            dropPercent: dropPercent
+          });
+        }
+      }
+    });
+
+    // Sort by largest drop first
+    vulnerable.sort((a, b) => b.dropPercent - a.dropPercent);
+    return vulnerable;
+  }
 }
 
 export default AdvocateService;
