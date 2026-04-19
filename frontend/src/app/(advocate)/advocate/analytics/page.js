@@ -1,14 +1,10 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { 
-  LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, 
-  XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer 
-} from "recharts";
-import { TrendingDown, Map, AlertOctagon, Activity, Loader2 } from "lucide-react";
-import { fetchLiveAnalytics } from "../../../../services/advocate.api";
 
-const PIE_COLORS = ["#4f46e5", "#0d9488", "#f59e0b", "#e11d48", "#6366f1", "#14b8a6"];
+import {  AlertOctagon, Activity } from "lucide-react";
+import { fetchAnalytics } from "../../../../services/advocate.api";
+
 
 export default function AdvocateAnalyticsPanel() {
   const [data, setData] = useState({
@@ -21,7 +17,7 @@ export default function AdvocateAnalyticsPanel() {
 
   useEffect(() => {
     async function loadData() {
-      const response = await fetchLiveAnalytics();
+      const response = await fetchAnalytics();
       if (response?.success && response?.data) {
         setData(response.data);
       }
@@ -32,13 +28,7 @@ export default function AdvocateAnalyticsPanel() {
 
   const { topComplaints: topComplaintsData, incomeByCity: incomeByCityData, commissionTrend: commissionTrendData, vulnerableWorkers } = data;
 
-  const PLATFORM_COLORS = {
-    Uber: "#4f46e5",
-    Foodpanda: "#0d9488",
-    Bykea: "#f59e0b",
-    Careem: "#e11d48",
-    InDrive: "#6366f1",
-  };
+ 
 
   const platformsSet = new Set();
   commissionTrendData.forEach(month => {
@@ -50,11 +40,11 @@ export default function AdvocateAnalyticsPanel() {
 
   return (
     <main className="p-8 max-w-7xl mx-auto h-full overflow-y-auto bg-slate-50">
-      {/* Header */}
+      
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-slate-900 flex items-center gap-3">
           <Activity className="w-8 h-8 text-indigo-600" />
-          System Analytics & Vulnerability
+          System Analytics 
         </h1>
         <p className="text-slate-500 mt-2">
           Aggregate platform metrics and at-risk worker flags.

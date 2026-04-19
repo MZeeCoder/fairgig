@@ -1,24 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Loader2, ShieldAlert, MessageSquare, CheckCircle, Clock, TrendingUp, MapPin } from "lucide-react";
+import { Loader2, ShieldAlert, MessageSquare, CheckCircle} from "lucide-react";
 import toast from "react-hot-toast";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
-import { fetchGrievances, resolveGrievance, fetchCommissionTrend, fetchVolatility, getComplaintById } from "@/services/advocate.api";
+import { fetchGrievances, resolveGrievance, getComplaintById } from "@/services/advocate.api";
 
-const CustomTooltip = ({ active, payload, label }) => {
-  if (active && payload && payload.length) {
-    return (
-      <div className="bg-white p-3 rounded-lg shadow-md border border-slate-100 flex flex-col gap-1">
-        <p className="text-slate-500 font-medium text-xs">{label}</p>
-        <p className="font-bold text-slate-800 text-sm">
-          PKR {payload[0].value.toLocaleString()}
-        </p>
-      </div>
-    );
-  }
-  return null;
-};
+
 
 export default function AdvocateDashboard() {
   const [cases, setCases] = useState([]);
@@ -26,10 +13,7 @@ export default function AdvocateDashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [advocateNotes, setAdvocateNotes] = useState("");
   const [isSaving, setIsSaving] = useState(false);
-  const [platformConfig, setPlatformConfig] = useState("Uber");
-  const [cityConfig, setCityConfig] = useState("Lahore");
-  const [trendData, setTrendData] = useState([]);
-  const [cityData, setCityData] = useState([]);
+ 
 
   useEffect(() => {
     loadCases();
@@ -55,15 +39,14 @@ export default function AdvocateDashboard() {
     setSelectedCase(c);
     setAdvocateNotes(c.notes || "");
     
-    // Fetch fresh full details directly from backend
-    const detailedRes = await getComplaintById(c.id);
-    if (detailedRes?.success && detailedRes.data) {
-      setSelectedCase(detailedRes.data);
-      setAdvocateNotes(detailedRes.data.notes || "");
+    const response = await getComplaintById(c.id);
+    if (response?.success && response.data) {
+      setSelectedCase(response.data);
+      setAdvocateNotes(response.data.notes || "");
     }
   };
 
-  const handleUpdateStatus = async (newStatus) => {
+  const submitHandler = async (newStatus) => {
     if (!selectedCase) return;
     setIsSaving(true);
     const toastId = toast.loading("Updating case status...");
@@ -181,7 +164,7 @@ export default function AdvocateDashboard() {
                
                 
                 <button 
-                  onClick={() => handleUpdateStatus('Resolved')}
+                  onClick={() => submitHandler('Resolved')}
                   disabled={isSaving || selectedCase.status === 'Resolved'}
                   className="flex-1 flex items-center justify-center gap-2 bg-teal-600 text-white hover:bg-teal-700 disabled:opacity-50 font-bold py-2.5 rounded-lg transition-colors"
                 >

@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { BarChart3, Users, FolderOpen, CheckCircle, TrendingUp, MapPin, AlertOctagon } from "lucide-react";
+import { FolderOpen, TrendingUp, MapPin, AlertOctagon } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, CartesianGrid } from "recharts";
-import { fetchCommissionTrend, fetchVolatility, fetchGrievances, fetchLiveAnalytics } from "@/services/advocate.api";
+import { fetchCommissionTrend, fetchVolatility, fetchGrievances, fetchAnalytics } from "@/services/advocate.api";
 
 const CustomTooltip = ({ active, payload, label }) => {
   if (active && payload && payload.length) {
@@ -46,7 +46,7 @@ export default function AdvocateDashboardPage() {
         commission: v.median_net_received || 0
       })));
     }
-    const analyticsRes = await fetchLiveAnalytics();
+    const analyticsRes = await fetchAnalytics();
     if (analyticsRes?.success && analyticsRes.data?.topComplaints) {
       setTopComplaintsData(analyticsRes.data.topComplaints);
     }

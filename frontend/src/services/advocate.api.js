@@ -33,7 +33,7 @@ export const resolveGrievance = async (id, status, notes) => {
   }
 };
 
-export const fetchLiveAnalytics = async () => {
+export const fetchAnalytics = async () => {
   try {
     const response = await axiosInstance.get("/advocate/analytics");
     return response.data;

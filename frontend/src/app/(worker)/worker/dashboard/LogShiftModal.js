@@ -66,17 +66,22 @@ export default function LogShiftModal({ isOpen, onClose, onShiftAdded }) {
 
     try {
       const data = new FormData();
-      data.append("platform", formData.platform);
-      data.append("city", formData.city);
-      data.append("city_zone", formData.city_zone);
-      data.append("date", formData.date);
-      data.append("hours_worked", formData.hours);
-      data.append("gross_earned", formData.gross);
-      data.append("deduction", formData.deductions);
-      data.append("net_received", formData.net);
-      data.append("screenshot", screenshotFile); 
+      
+      const payload = {
+        platform: formData.platform,
+        city: formData.city,
+        city_zone: formData.city_zone,
+        date: formData.date,
+        hours_worked: formData.hours,
+        gross_earned: formData.gross,
+        deduction: formData.deductions,
+        net_received: formData.net,
+        screenshot: screenshotFile
+      };
 
-      // Submit actual shift log
+      Object.entries(payload).forEach(([key, value]) => data.append(key, value));
+
+      
       const result = await submitShiftLog(data);
       
       if (onShiftAdded && result?.data) {
@@ -122,17 +127,14 @@ export default function LogShiftModal({ isOpen, onClose, onShiftAdded }) {
             <form onSubmit={handleShiftSubmit} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1.5">Platform</label>
-                <select 
+                <input 
+                  type="text"
                   name="platform"
                   value={formData.platform}
                   onChange={handleChange}
+                  placeholder="E.g. Foodpanda, InDrive, Uber..."
                   className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm bg-white text-slate-900 focus:outline-none focus:ring-1 focus:ring-teal-500 focus:border-teal-500 transition-all"
-                >
-                  <option value="">Select Platform</option>
-                  <option value="Uber">Uber</option>
-                  <option value="Foodpanda">Foodpanda</option>
-                  <option value="Bykea">Bykea</option>
-                </select>
+                />
                 {errors.platform && <p className="text-xs text-red-500 mt-1">{errors.platform}</p>}
               </div>
 
