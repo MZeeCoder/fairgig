@@ -30,14 +30,6 @@ export default function AdvocateAnalyticsPanel() {
     loadData();
   }, []);
 
-  if (loading) {
-    return (
-      <main className="p-8 max-w-7xl mx-auto h-full flex items-center justify-center bg-slate-50">
-        <Loader2 className="w-10 h-10 animate-spin text-indigo-600" />
-      </main>
-    );
-  }
-
   const { topComplaints: topComplaintsData, incomeByCity: incomeByCityData, commissionTrend: commissionTrendData, vulnerableWorkers } = data;
 
   const PLATFORM_COLORS = {
@@ -94,7 +86,31 @@ export default function AdvocateAnalyticsPanel() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200">
-              {vulnerableWorkers.map((worker) => (
+              {loading ? (
+                [1, 2, 3, 4, 5].map((i) => (
+                  <tr key={`skeleton-${i}`} className="animate-pulse">
+                    <td className="py-4 px-6">
+                      <div className="h-4 bg-slate-200 rounded w-32 mb-2"></div>
+                      <div className="h-3 bg-slate-200 rounded w-20"></div>
+                    </td>
+                    <td className="py-4 px-6">
+                      <div className="h-5 bg-slate-200 rounded-full w-20 bg-slate-200"></div>
+                    </td>
+                    <td className="py-4 px-6">
+                      <div className="h-4 bg-slate-200 rounded w-16 ml-auto"></div>
+                    </td>
+                    <td className="py-4 px-6">
+                      <div className="h-4 bg-slate-200 rounded w-16 ml-auto"></div>
+                    </td>
+                    <td className="py-4 px-6">
+                      <div className="h-6 bg-slate-200 rounded-md w-12 mx-auto"></div>
+                    </td>
+                    <td className="py-4 px-6">
+                      <div className="h-4 bg-slate-200 rounded w-16 mx-auto"></div>
+                    </td>
+                  </tr>
+                ))
+              ) : vulnerableWorkers.map((worker) => (
                 <tr key={worker.id} className="hover:bg-slate-50 transition-colors">
                   <td className="py-4 px-6">
                     <div className="font-semibold text-slate-800">{worker.name}</div>
