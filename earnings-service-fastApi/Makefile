@@ -9,8 +9,8 @@ install:
 	$(PYTHON) -m pip install -r requirements.txt
 
 
-install-playwright-browser:
-	$(PYTHON) -m playwright install chromium --with-deps
+
+
 
 
 run:
