@@ -114,7 +114,7 @@ export default function WorkerDashboard() {
   const totalPages = Math.ceil(shiftLogs.length / itemsPerPage);
   const paginatedLogs = shiftLogs.slice(
     (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
+    currentPage * itemsPerPage,
   );
 
   useEffect(() => {
@@ -204,7 +204,10 @@ export default function WorkerDashboard() {
       const response = await bulkUploadEarnings(file);
 
       // Extract newly created earning IDs properly
-      const newEarningIds = response?.new_ids || (response?.items && response.items.map(i => i?._id || i?.id)) || [];
+      const newEarningIds =
+        response?.new_ids ||
+        (response?.items && response.items.map((i) => i?._id || i?.id)) ||
+        [];
 
       // Call bulk anomaly detection
       if (newEarningIds.length > 0) {
@@ -214,7 +217,9 @@ export default function WorkerDashboard() {
 
       const successMsg = `Success: ${response.message || "File uploaded and analyzed."}`;
       setUploadSuccess(successMsg);
-      toast.success("File uploaded and analyzed successfully!", { id: toastId });
+      toast.success("File uploaded and analyzed successfully!", {
+        id: toastId,
+      });
 
       // Refresh history logic to see new entries immediately
       const res = await fetchHistory();
@@ -224,9 +229,10 @@ export default function WorkerDashboard() {
         setShiftLogs(res);
       }
     } catch (error) {
-      const errorMsg = error?.response?.data?.detail ||
-          error.message ||
-          "Something went wrong while uploading the file.";
+      const errorMsg =
+        error?.response?.data?.detail ||
+        error.message ||
+        "Something went wrong while uploading the file.";
       setUploadError(errorMsg);
       toast.error(errorMsg, { id: toastId });
       setUploadSuccess(""); // clear the uploading message
@@ -429,7 +435,7 @@ export default function WorkerDashboard() {
                 ) : shiftLogs.length === 0 ? (
                   <tr>
                     <td
-                  paginatedLogs
+                      paginatedLogs
                       className="px-6 py-8 text-center text-sm text-slate-500"
                     >
                       No shift records found. Submit your first shift log using
@@ -497,7 +503,11 @@ export default function WorkerDashboard() {
                       <td className="px-6 py-4">
                         {log.screenshot || log.screenshot_url ? (
                           <button
-                            onClick={() => setSelectedImage(log.screenshot || log.screenshot_url)}
+                            onClick={() =>
+                              setSelectedImage(
+                                log.screenshot || log.screenshot_url,
+                              )
+                            }
                             className="relative block w-10 h-10 rounded-md overflow-hidden border border-slate-200 hover:ring-2 hover:ring-teal-500 transition-all group shrink-0"
                             title="View Screenshot"
                           >
@@ -538,7 +548,9 @@ export default function WorkerDashboard() {
                 Page {currentPage} of {totalPages}
               </span>
               <button
-                onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                onClick={() =>
+                  setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                }
                 disabled={currentPage === totalPages}
                 className="flex items-center gap-1.5 px-4 py-2 border border-slate-200 bg-white rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
               >
