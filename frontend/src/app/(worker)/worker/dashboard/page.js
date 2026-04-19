@@ -30,10 +30,7 @@ import {
   bulkUploadEarnings,
 } from "@/services/earnings.api";
 
-// ── Mock Data ────────────────────────────────────────────────
-// The mock data has been removed to prepare for API integration.
 
-// ── Sub-components ───────────────────────────────────────────
 const statusStyles = {
   Confirmed: "bg-teal-50 text-teal-700 border border-teal-200",
   Pending: "bg-amber-50 text-amber-700 border border-amber-200",
