@@ -10,7 +10,7 @@ const signToken = (payload, expiresIn) => {
 };
 
 export const generateAccessToken = (payload) => {
-  return signToken(payload, "15m");
+  return signToken(payload, "2h");
 };
 
 export const generateRefreshToken = (payload) => {
