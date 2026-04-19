@@ -48,9 +48,9 @@ export default function LoginPage() {
       toast.success("Login successful!");
 
       const roleRouteMap = {
-        worker: "/worker",
-        verifier: "/verifier",
-        advocate: "/advocate",
+        worker: "/worker/dashboard",
+        verifier: "/verifier/dashboard",
+        advocate: "/advocate/dashboard",
       };
 
       router.push(roleRouteMap[user.role] || "/unauthorized");
