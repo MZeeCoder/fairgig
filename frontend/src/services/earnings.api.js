@@ -1,4 +1,5 @@
 import fastApi from "../lib/fastapiInstance";
+import anomalyApi from "../lib/anomalyApiInstance";
 
 export const submitShiftLog = async (formData) => {
   try {
@@ -29,7 +30,7 @@ export const bulkUploadEarnings = async (file) => {
 
 export const detectAnomaly = async (newEarningId) => {
   try {
-    const res = await fastApi.post("/anomaly/detect", {
+    const res = await anomalyApi.post("/anomaly/detect", {
       new_earning_id: newEarningId,
     });
     return res.data;

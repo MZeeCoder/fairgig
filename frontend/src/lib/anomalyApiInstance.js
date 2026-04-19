@@ -2,17 +2,16 @@ import axios from "axios";
 import { getAccessToken } from "@/lib/clientAuth";
 
 const isProduction = process.env.NODE_ENV === "production";
-const productionFastApiUrl =
-  process.env.NEXT_PUBLIC_FAST_API_URL_PRODUCTION
+const productionAnomalyApiUrl =
+  process.env.NEXT_PUBLIC_ANOMALY_API_URL_PRODUCTION 
 
-
-const fastApi = axios.create({
+const anomalyApi = axios.create({
   baseURL: isProduction
-    ? productionFastApiUrl
-    : process.env.NEXT_PUBLIC_FAST_API_URL,
+    ? productionAnomalyApiUrl
+    : process.env.NEXT_PUBLIC_ANOMALY_API_URL 
 });
 
-fastApi.interceptors.request.use(
+anomalyApi.interceptors.request.use(
   (config) => {
     const token = getAccessToken();
     if (token) {
@@ -23,7 +22,7 @@ fastApi.interceptors.request.use(
   (error) => Promise.reject(error),
 );
 
-fastApi.interceptors.response.use(
+anomalyApi.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
@@ -37,4 +36,4 @@ fastApi.interceptors.response.use(
   }
 );
 
-export default fastApi;
+export default anomalyApi;
