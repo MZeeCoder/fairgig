@@ -10,7 +10,7 @@ install:
 
 
 install-playwright-browser:
-	$(PYTHON) -m playwright install chromium
+	$(PYTHON) -m playwright install chromium --with-deps
 
 
 run:
