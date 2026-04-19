@@ -6,7 +6,19 @@ import { FolderOpen, TrendingUp, MapPin, AlertOctagon } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, CartesianGrid } from "recharts";
 import { fetchCommissionTrend, fetchVolatility, fetchGrievances, fetchAnalytics } from "@/services/advocate.api";
 
-
+const CustomTooltip = ({ active, payload, label }) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-white p-3 rounded-lg shadow-md border border-slate-100 flex flex-col gap-1">
+        <p className="text-slate-500 font-medium text-xs">{label}</p>
+        <p className="font-bold text-slate-800 text-sm">
+          PKR {payload[0].value.toLocaleString()}
+        </p>
+      </div>
+    );
+  }
+  return null;
+};
 
 export default function AdvocateDashboardPage() {
   const [trendData, setTrendData] = useState([]);
@@ -27,16 +39,16 @@ export default function AdvocateDashboardPage() {
         commission: t.total_gross_earned || 0
       })));
     }
-    const response = await fetchVolatility("Lahore");
-    if (response?.success && response.data?.volatility) {
-      setCityData(response.data.volatility.map(v => ({
+    const volRes = await fetchVolatility("Lahore");
+    if (volRes?.success && volRes.data?.volatility) {
+      setCityData(volRes.data.volatility.map(v => ({
         name: v.zone || "Unknown",
         commission: v.median_net_received || 0
       })));
     }
-    const analyticsResponse = await fetchAnalytics();
-    if (analyticsResponse?.success && analyticsResponse.data?.topComplaints) {
-      setTopComplaintsData(analyticsResponse.data.topComplaints);
+    const analyticsRes = await fetchAnalytics();
+    if (analyticsRes?.success && analyticsRes.data?.topComplaints) {
+      setTopComplaintsData(analyticsRes.data.topComplaints);
     }
   };
 

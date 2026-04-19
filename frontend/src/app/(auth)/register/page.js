@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Loader2, Briefcase, User, Mail, Lock, MapPin, Layers, Shield, Phone } from "lucide-react";
+import { Loader2, Briefcase, User, Mail, Lock, MapPin, Layers, Shield, Phone, FileUp } from "lucide-react";
 import toast from "react-hot-toast";
 import { authSchemas } from "../../../schemas/auth.schema";
 import { registerUser } from "../../../services/auth.api";
@@ -27,12 +27,18 @@ export default function RegisterPage() {
     city: "",
     platforms: "",
     role: "",
+    documents: [],
   });
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, files, type } = e.target;
 
     setFieldErrors((prev) => ({ ...prev, [name]: undefined }));
+
+    if (type === "file") {
+      setFormData({ ...formData, [name]: Array.from(files || []) });
+      return;
+    }
 
     setFormData({ ...formData, [name]: value });
   };
@@ -42,7 +48,7 @@ export default function RegisterPage() {
     setError("");
     setFieldErrors({});
     if (tab === "worker") {
-      setFormData((prev) => ({ ...prev, role: "" }));
+      setFormData((prev) => ({ ...prev, role: "", documents: [] }));
     }
   };
 
@@ -61,6 +67,12 @@ export default function RegisterPage() {
       const flattenedErrors = zodValidation.error.flatten().fieldErrors;
       setFieldErrors(flattenedErrors);
       setError(zodValidation.error.issues[0]?.message || "Please make sure everything is correct.");
+      return;
+    }
+
+    if (activeTab === "staff" && formData.documents.length === 0) {
+      setFieldErrors((prev) => ({ ...prev, documents: ["Please upload at least one verification document."] }));
+      setError("Document is required for staff registration.");
       return;
     }
 
@@ -87,10 +99,17 @@ export default function RegisterPage() {
         };
         response = await registerUser(payload, activeTab);
       } else {
-        const payload = {
-          ...commonPayload,
-          role: formData.role,
-        };
+        const payload = new FormData();
+        payload.append("name", commonPayload.name);
+        payload.append("email", commonPayload.email);
+        payload.append("password", commonPayload.password);
+        payload.append("phone", commonPayload.phone);
+        payload.append("city", commonPayload.city);
+        payload.append("role", formData.role);
+
+        formData.documents.forEach((file) => {
+          payload.append("verificationDocuments", file);
+        });
 
         response = await registerUser(payload, activeTab);
       }
@@ -101,9 +120,9 @@ export default function RegisterPage() {
         login(user, accessToken, refreshToken);
         toast.success("Registration successful!");
         const roleRouteMap = {
-          worker: "/worker/dashboard",
-          verifier: "/verifier/dashboard",
-          advocate: "/advocate/dashboard",
+          worker: "/worker",
+          verifier: "/verifier",
+          advocate: "/advocate",
         };
         router.push(roleRouteMap[user.role] || "/unauthorized");
       }
@@ -330,6 +349,22 @@ export default function RegisterPage() {
                 </div>
                 {fieldErrors.role?.[0] && (
                   <p className="mt-1 text-xs text-red-600">{fieldErrors.role[0]}</p>
+                )}
+
+                <label className="block text-sm font-medium text-slate-700 mb-1 mt-4">Document</label>
+                <div className="relative">
+                  <FileUp className="absolute left-3 top-2.5 w-4 h-4 text-slate-400 pointer-events-none" />
+                  <input
+                    type="file"
+                    name="documents"
+                    multiple
+                    onChange={handleChange}
+                    accept="image/*,.pdf,.doc,.docx"
+                    className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm bg-white text-slate-900 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
+                  />
+                </div>
+                {fieldErrors.documents?.[0] && (
+                  <p className="mt-1 text-xs text-red-600">{fieldErrors.documents[0]}</p>
                 )}
               </div>
             )}

@@ -9,9 +9,9 @@ export default function VerifierQueuePage() {
   const [queue, setQueue] = useState([]);
   const [selectedShift, setSelectedShift] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [actionLoading, setActionLoading] = useState(null); 
+  const [actionLoading, setActionLoading] = useState(null); // 'Confirmed', 'Flagged', 'Unverifiable'
 
-
+  // Fetch Data on Load
   useEffect(() => {
     loadQueue();
   }, []);
@@ -19,10 +19,10 @@ export default function VerifierQueuePage() {
   const loadQueue = async () => {
     setIsLoading(true);
     try {
-      const response = await fetchPendingShifts();
-      if (response.success) {
-        setQueue(response.data);
-        if (response.data.length > 0) setSelectedShift(response.data[0]);
+      const res = await fetchPendingShifts();
+      if (res.success) {
+        setQueue(res.data);
+        if (res.data.length > 0) setSelectedShift(res.data[0]); // Auto-select first item
       }
     } catch (err) {
       console.error("Failed to load queue");
@@ -31,7 +31,7 @@ export default function VerifierQueuePage() {
     }
   };
 
-  const submitHandler = async (status) => {
+  const handleAction = async (status) => {
     if (!selectedShift) return;
     setActionLoading(status);
     const toastId = toast.loading(`Marking as ${status}...`);
@@ -39,10 +39,10 @@ export default function VerifierQueuePage() {
     try {
       await updateShiftStatus(selectedShift.id, status);
       
-      
+      // Artificial delay to let user see the loading state
       await new Promise((resolve) => setTimeout(resolve, 800));
 
-      
+      // Remove from queue and select the next one
       const updatedQueue = queue.filter(s => s.id !== selectedShift.id);
       setQueue(updatedQueue);
       setSelectedShift(updatedQueue.length > 0 ? updatedQueue[0] : null);
@@ -179,7 +179,7 @@ export default function VerifierQueuePage() {
                   
                   <div className="space-y-3">
                     <button 
-                      onClick={() => submitHandler("Confirmed")}
+                      onClick={() => handleAction("Confirmed")}
                       disabled={actionLoading}
                       className="w-full flex items-center justify-center gap-2 bg-teal-600 hover:bg-teal-700 disabled:opacity-50 text-white font-bold py-3 rounded-lg transition-colors"
                     >
@@ -189,7 +189,7 @@ export default function VerifierQueuePage() {
                     
                     <div className="grid grid-cols-2 gap-3">
                       <button 
-                        onClick={() => submitHandler("Flagged")}
+                        onClick={() => handleAction("Flagged")}
                         disabled={actionLoading}
                         className="flex items-center justify-center gap-2 bg-white border-2 border-amber-500 text-amber-600 hover:bg-amber-50 disabled:opacity-50 font-bold py-2.5 rounded-lg transition-colors"
                       >
@@ -197,7 +197,7 @@ export default function VerifierQueuePage() {
                         Flag Issue
                       </button>
                       <button 
-                        onClick={() => submitHandler("Unverifiable")}
+                        onClick={() => handleAction("Unverifiable")}
                         disabled={actionLoading}
                         className="flex items-center justify-center gap-2 bg-white border-2 border-red-500 text-red-600 hover:bg-red-50 disabled:opacity-50 font-bold py-2.5 rounded-lg transition-colors"
                       >

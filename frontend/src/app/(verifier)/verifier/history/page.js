@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Search, Filter, Download, CheckCircle, AlertTriangle, XCircle } from "lucide-react";
+import { Search, Filter, Download, CheckCircle, AlertTriangle, XCircle, FileText, Loader2 } from "lucide-react";
 import { fetchHistoryShifts } from "@/services/verifier.api";
 import { exportAuditCSV } from "@/lib/exportCsv";
 import toast from "react-hot-toast";
@@ -55,7 +55,7 @@ export default function VerifierHistoryPage() {
     }
   };
 
-  
+  // Simple client-side filtering for the hackathon
   const filteredHistory = reviewedHistory.filter(log => {
     const matchesSearch = log.platform.toLowerCase().includes(searchTerm.toLowerCase()) || 
                           (log._id && log._id.toString().includes(searchTerm));
