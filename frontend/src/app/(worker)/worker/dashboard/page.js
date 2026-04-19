@@ -130,8 +130,18 @@ export default function WorkerDashboard() {
     // Add the new shift at the top of the table locally
     setShiftLogs((prev) => [newShift, ...prev]);
 
-    const earningId = newShift?._id || newShift?.id;
-    if (!earningId) return;
+    const earningId =
+      newShift?.data?._id ||
+      newShift?._id ||
+      newShift?.data?.id ||
+      newShift?.id;
+    if (!earningId) {
+      console.warn(
+        "Could not determine earningId from the newly returned shift data.",
+        newShift,
+      );
+      return;
+    }
 
     void detectAnomaly(earningId)
       .then((result) => {

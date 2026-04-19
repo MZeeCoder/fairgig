@@ -34,7 +34,8 @@ export default function GrievancePage() {
     try {
       setIsFetching(true);
       const data = await getUserGrievances(id);
-      if (data?.data) { // Assuming data is wrapped in ApiResponse
+      if (data?.data) {
+        // Assuming data is wrapped in ApiResponse
         setGrievances(data.data);
       }
     } catch (err) {
@@ -49,8 +50,13 @@ export default function GrievancePage() {
     <main className="p-8 max-w-4xl mx-auto">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">File a Grievance</h1>
-          <p className="text-sm text-slate-500 mt-1">Report unfair practices, missing pay, or account issues. Advocates will review this.</p>
+          <h1 className="text-2xl font-bold text-slate-900">
+            File a Grievance
+          </h1>
+          <p className="text-sm text-slate-500 mt-1">
+            Report unfair practices, missing pay, or account issues. Advocates
+            will review this.
+          </p>
         </div>
         <button
           onClick={() => setIsModalOpen(true)}
@@ -61,25 +67,37 @@ export default function GrievancePage() {
         </button>
       </div>
 
-      <GrievanceModal 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
+      <GrievanceModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
         onSuccess={() => {
           if (userId) fetchGrievances(userId);
-        }} 
+        }}
       />
 
       {/* Past Reports Table */}
-      <h3 className="text-sm font-bold text-slate-900 mb-3">Your Previous Reports</h3>
+      <h3 className="text-sm font-bold text-slate-900 mb-3">
+        Your Previous Reports
+      </h3>
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
         <table className="w-full">
           <thead>
             <tr className="bg-slate-50 border-b border-slate-200">
-              <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Date</th>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Platform</th>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Category</th>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Description</th>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Status</th>
+              <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase">
+                Date
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase">
+                Platform
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase">
+                Category
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase">
+                Description
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase">
+                Status
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
@@ -105,25 +123,40 @@ export default function GrievancePage() {
               ))
             ) : fetchError ? (
               <tr>
-                <td colSpan="5" className="px-6 py-4 text-center text-sm text-red-500">
+                <td
+                  colSpan="5"
+                  className="px-6 py-4 text-center text-sm text-red-500"
+                >
                   {fetchError}
                 </td>
               </tr>
             ) : grievances.length === 0 ? (
               <tr>
-                <td colSpan="5" className="px-6 py-8 text-center text-sm text-slate-500">
+                <td
+                  colSpan="5"
+                  className="px-6 py-8 text-center text-sm text-slate-500"
+                >
                   No grievances found.
                 </td>
               </tr>
             ) : (
-              grievances.map((g) => (
-                <tr key={g._id} className="hover:bg-slate-50">
+              grievances.map((g, index) => (
+                <tr key={g._id || g.id || index} className="hover:bg-slate-50">
                   <td className="px-6 py-4 text-sm text-slate-600 truncate max-w-[100px]">
                     {new Date(g.createdAt || Date.now()).toLocaleDateString()}
                   </td>
-                  <td className="px-6 py-4 text-sm font-medium text-slate-900 truncate max-w-[120px]">{g.platform}</td>
-                  <td className="px-6 py-4 text-sm text-slate-600 truncate max-w-[150px]">{g.category}</td>
-                  <td className="px-6 py-4 text-sm text-slate-600 truncate max-w-[200px]" title={g.description}>{g.description || "N/A"}</td>
+                  <td className="px-6 py-4 text-sm font-medium text-slate-900 truncate max-w-[120px]">
+                    {g.platform}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-slate-600 truncate max-w-[150px]">
+                    {g.category}
+                  </td>
+                  <td
+                    className="px-6 py-4 text-sm text-slate-600 truncate max-w-[200px]"
+                    title={g.description}
+                  >
+                    {g.description || "N/A"}
+                  </td>
                   <td className="px-6 py-4">
                     <span className="text-xs font-medium bg-amber-50 text-amber-700 px-2.5 py-1 rounded-full border border-amber-200 whitespace-nowrap">
                       {g.status || "Under Review"}

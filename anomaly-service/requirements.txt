@@ -1,0 +1,11 @@
+pydantic
+numpy
+fastapi
+uvicorn
+beanie<2
+motor
+python-dotenv
+cloudinary
+python-multipart
+PyJWT
+playwright

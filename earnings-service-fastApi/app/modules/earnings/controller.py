@@ -50,7 +50,7 @@ class EarningsController:
         earning = await EarningsService.create_earning(payload)
         return {
             "message": "Earning created successfully",
-            "data": earning.model_dump(by_alias=True),
+            "data": earning.model_dump(by_alias=True, mode="json"),
         }
 
     @staticmethod

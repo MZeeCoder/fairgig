@@ -43,3 +43,23 @@ services:
         sync: false
       - key: FRONTEND_URL_PRODUCTION
         sync: false
+  - type: web
+    name: fairgig-anomaly-service
+    runtime: python
+    rootDir: anomaly-service
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGO_URI
+        sync: false
+      - key: MONGO_DB_NAME
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: FRONTEND_URL_PRODUCTION
+        sync: false

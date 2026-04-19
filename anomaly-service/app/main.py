@@ -6,7 +6,7 @@ import uvicorn
 
 from app.config.db import connect_to_mongo
 from app.constants.config import FRONTEND_URL, FRONTEND_URL_PRODUCTION, NODE_ENV
-from app.modules.earnings.route import earnings_router
+from app.modules.anomaly_detection.route import anomaly_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -31,4 +31,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(earnings_router)
+app.include_router(anomaly_router)
+
+@app.get("/")
+async def root():
+        return {"message": "Anomaly Detection Service running"}

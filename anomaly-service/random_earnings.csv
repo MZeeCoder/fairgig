@@ -1,0 +1,101 @@
+platform,city,city_zone,date,hours_worked,gross_earned,deduction,net_received,screenshot_url,status
+Uber,Lahore,Gulberg,2025-10-08,8.38,6592.87,950.49,5642.38,https://example.com/screenshots/proof_1.jpg,verified
+Careem,Lahore,Gulberg,2026-08-08,6.79,2277.52,361.49,1916.03,https://example.com/screenshots/proof_2.jpg,unverifiable
+InDrive,Lahore,DHA,2026-07-25,1.23,561.6,102.46,459.14,https://example.com/screenshots/proof_3.jpg,pending
+InDrive,Lahore,Wapda Town,2025-09-13,10.29,7698.75,786.28,6912.47,https://example.com/screenshots/proof_4.jpg,unverifiable
+Bykea,Lahore,Johar Town,2026-06-08,11.06,8578.97,1618.89,6960.08,https://example.com/screenshots/proof_5.jpg,flagged
+Foodpanda,Lahore,DHA,2026-10-04,5.26,1932.32,197.03,1735.29,https://example.com/screenshots/proof_6.jpg,verified
+InDrive,Lahore,Model Town,2025-12-02,8.38,4213.96,492.74,3721.22,https://example.com/screenshots/proof_7.jpg,flagged
+Foodpanda,Lahore,Johar Town,2025-10-01,7.22,3109.56,450.53,2659.03,https://example.com/screenshots/proof_8.jpg,unverifiable
+InDrive,Lahore,Gulberg,2025-03-27,3.8,2708.59,291.34,2417.25,https://example.com/screenshots/proof_9.jpg,pending
+Foodpanda,Lahore,Model Town,2025-05-01,10.73,7526.6,1292.23,6234.37,https://example.com/screenshots/proof_10.jpg,flagged
+Bykea,Lahore,DHA,2025-03-27,8.45,5196.7,936.51,4260.19,https://example.com/screenshots/proof_11.jpg,unverifiable
+Uber,Lahore,Bahria Town,2026-02-10,11.39,7111.71,723.49,6388.22,https://example.com/screenshots/proof_12.jpg,pending
+Careem,Lahore,DHA,2026-02-15,6.81,2095.29,391.07,1704.22,https://example.com/screenshots/proof_13.jpg,pending
+Bykea,Lahore,Wapda Town,2025-09-25,11.43,6025.01,663.19,5361.82,https://example.com/screenshots/proof_14.jpg,flagged
+Uber,Lahore,Bahria Town,2026-03-27,7.44,3308.17,640.01,2668.16,https://example.com/screenshots/proof_15.jpg,verified
+Bykea,Lahore,Bahria Town,2026-02-27,9.34,5374.58,628.16,4746.42,https://example.com/screenshots/proof_16.jpg,pending
+Careem,Lahore,Gulberg,2025-03-26,1.8,1285.62,172.34,1113.28,https://example.com/screenshots/proof_17.jpg,pending
+Careem,Lahore,Model Town,2026-12-07,6.28,3636.31,627.77,3008.54,https://example.com/screenshots/proof_18.jpg,pending
+InDrive,Lahore,Wapda Town,2025-11-25,8.95,5629.67,915.37,4714.3,https://example.com/screenshots/proof_19.jpg,unverifiable
+Foodpanda,Lahore,Model Town,2025-09-13,10.69,7710.39,805.25,6905.14,https://example.com/screenshots/proof_20.jpg,flagged
+Uber,Lahore,DHA,2025-10-22,5.55,3421.02,675.25,2745.77,https://example.com/screenshots/proof_21.jpg,pending
+InDrive,Lahore,Gulberg,2026-03-16,9.95,4076.27,578.94,3497.33,https://example.com/screenshots/proof_22.jpg,unverifiable
+Foodpanda,Lahore,DHA,2025-07-01,4.39,2249.73,431.69,1818.04,https://example.com/screenshots/proof_23.jpg,flagged
+Uber,Lahore,Bahria Town,2026-01-26,5.55,2629.44,314.58,2314.86,https://example.com/screenshots/proof_24.jpg,unverifiable
+Bykea,Lahore,Model Town,2025-02-17,11.36,7650.46,840.6,6809.86,https://example.com/screenshots/proof_25.jpg,flagged
+Uber,Lahore,Model Town,2026-10-08,4.7,3017.62,475.73,2541.89,https://example.com/screenshots/proof_26.jpg,pending
+Uber,Lahore,DHA,2026-06-12,2.85,2074.13,382.53,1691.6,https://example.com/screenshots/proof_27.jpg,flagged
+Bykea,Lahore,Gulberg,2025-03-02,10.21,6785.69,1038.84,5746.85,https://example.com/screenshots/proof_28.jpg,verified
+Careem,Lahore,Model Town,2026-09-05,4.73,2490.35,314.39,2175.96,https://example.com/screenshots/proof_29.jpg,flagged
+Careem,Lahore,Johar Town,2026-09-05,7.17,3149.34,601.35,2547.99,https://example.com/screenshots/proof_30.jpg,pending
+Foodpanda,Lahore,Gulberg,2026-11-06,2.27,887.81,123.94,763.87,https://example.com/screenshots/proof_31.jpg,unverifiable
+Bykea,Lahore,Johar Town,2025-06-12,11.95,8600.81,1380.26,7220.55,https://example.com/screenshots/proof_32.jpg,unverifiable
+InDrive,Lahore,Bahria Town,2025-09-04,5.96,4381.81,460.51,3921.3,https://example.com/screenshots/proof_33.jpg,unverifiable
+Foodpanda,Lahore,Wapda Town,2025-10-24,8.48,2947.56,441.22,2506.34,https://example.com/screenshots/proof_34.jpg,pending
+Foodpanda,Lahore,Johar Town,2026-05-16,9.0,4727.04,756.14,3970.9,https://example.com/screenshots/proof_35.jpg,verified
+Foodpanda,Lahore,Wapda Town,2025-07-29,6.68,4696.69,858.3,3838.39,https://example.com/screenshots/proof_36.jpg,pending
+Uber,Lahore,DHA,2025-07-29,8.88,6555.44,955.79,5599.65,https://example.com/screenshots/proof_37.jpg,flagged
+Uber,Lahore,Johar Town,2025-09-29,5.05,3482.66,639.46,2843.2,https://example.com/screenshots/proof_38.jpg,flagged
+Uber,Lahore,DHA,2025-04-19,4.07,3187.6,462.21,2725.39,https://example.com/screenshots/proof_39.jpg,pending
+Careem,Lahore,DHA,2026-08-26,3.43,1483.09,184.89,1298.2,https://example.com/screenshots/proof_40.jpg,flagged
+InDrive,Lahore,Johar Town,2025-05-07,8.04,4426.0,454.49,3971.51,https://example.com/screenshots/proof_41.jpg,unverifiable
+Bykea,Lahore,Johar Town,2025-09-16,2.09,965.66,138.4,827.26,https://example.com/screenshots/proof_42.jpg,unverifiable
+Foodpanda,Lahore,DHA,2025-01-10,6.3,4818.26,817.42,4000.84,https://example.com/screenshots/proof_43.jpg,unverifiable
+Foodpanda,Lahore,Gulberg,2025-03-24,8.14,4668.87,772.36,3896.51,https://example.com/screenshots/proof_44.jpg,unverifiable
+InDrive,Lahore,DHA,2025-05-10,4.56,2585.41,472.51,2112.9,https://example.com/screenshots/proof_45.jpg,pending
+Careem,Lahore,Johar Town,2025-01-15,6.5,2887.31,391.48,2495.83,https://example.com/screenshots/proof_46.jpg,pending
+Careem,Lahore,Johar Town,2026-10-02,4.09,1933.24,296.97,1636.27,https://example.com/screenshots/proof_47.jpg,flagged
+Careem,Lahore,Bahria Town,2025-12-05,1.95,812.82,137.87,674.95,https://example.com/screenshots/proof_48.jpg,unverifiable
+InDrive,Lahore,Wapda Town,2025-03-22,2.62,1790.98,293.24,1497.74,https://example.com/screenshots/proof_49.jpg,unverifiable
+Careem,Lahore,Gulberg,2025-01-13,5.39,4154.96,476.81,3678.15,https://example.com/screenshots/proof_50.jpg,unverifiable
+Foodpanda,Lahore,Model Town,2026-10-23,1.14,869.75,111.11,758.64,https://example.com/screenshots/proof_51.jpg,unverifiable
+Uber,Lahore,Model Town,2026-07-17,3.5,2041.64,347.97,1693.67,https://example.com/screenshots/proof_52.jpg,flagged
+Careem,Lahore,Model Town,2026-08-17,6.81,2220.41,405.59,1814.82,https://example.com/screenshots/proof_53.jpg,pending
+Uber,Lahore,Gulberg,2026-01-09,3.53,1425.49,230.76,1194.73,https://example.com/screenshots/proof_54.jpg,flagged
+InDrive,Lahore,Johar Town,2026-06-02,8.71,4999.15,911.55,4087.6,https://example.com/screenshots/proof_55.jpg,flagged
+Bykea,Lahore,DHA,2025-01-17,3.23,1825.89,255.58,1570.31,https://example.com/screenshots/proof_56.jpg,flagged
+Bykea,Lahore,Wapda Town,2025-11-02,2.34,1306.76,142.04,1164.72,https://example.com/screenshots/proof_57.jpg,flagged
+InDrive,Lahore,Bahria Town,2025-04-12,4.33,1686.22,238.9,1447.32,https://example.com/screenshots/proof_58.jpg,unverifiable
+Uber,Lahore,Gulberg,2026-02-18,7.91,3721.0,732.87,2988.13,https://example.com/screenshots/proof_59.jpg,pending
+Uber,Lahore,Bahria Town,2025-10-08,11.06,7618.01,1191.68,6426.33,https://example.com/screenshots/proof_60.jpg,verified
+InDrive,Lahore,DHA,2025-02-22,3.13,1616.21,319.66,1296.55,https://example.com/screenshots/proof_61.jpg,flagged
+Bykea,Lahore,Bahria Town,2026-01-05,7.14,3888.05,739.55,3148.5,https://example.com/screenshots/proof_62.jpg,unverifiable
+Uber,Lahore,Gulberg,2025-11-07,9.01,4284.83,819.18,3465.65,https://example.com/screenshots/proof_63.jpg,flagged
+Careem,Lahore,Wapda Town,2026-02-25,10.34,7606.6,1116.85,6489.75,https://example.com/screenshots/proof_64.jpg,flagged
+Foodpanda,Lahore,Bahria Town,2026-02-27,10.11,3434.44,587.14,2847.3,https://example.com/screenshots/proof_65.jpg,unverifiable
+Uber,Lahore,DHA,2025-07-08,9.3,5693.69,1024.33,4669.36,https://example.com/screenshots/proof_66.jpg,verified
+InDrive,Lahore,Bahria Town,2025-05-02,4.6,1873.77,213.54,1660.23,https://example.com/screenshots/proof_67.jpg,unverifiable
+Foodpanda,Lahore,Wapda Town,2026-10-17,5.16,3560.57,558.82,3001.75,https://example.com/screenshots/proof_68.jpg,unverifiable
+Foodpanda,Lahore,Gulberg,2025-02-11,6.41,3254.55,418.86,2835.69,https://example.com/screenshots/proof_69.jpg,pending
+Foodpanda,Lahore,Model Town,2026-01-30,7.46,5916.63,673.56,5243.07,https://example.com/screenshots/proof_70.jpg,flagged
+InDrive,Lahore,Model Town,2025-01-22,1.69,1284.04,254.38,1029.66,https://example.com/screenshots/proof_71.jpg,pending
+Careem,Lahore,Johar Town,2026-04-29,4.33,2592.78,497.3,2095.48,https://example.com/screenshots/proof_72.jpg,pending
+Foodpanda,Lahore,Model Town,2026-11-12,10.29,7525.54,911.87,6613.67,https://example.com/screenshots/proof_73.jpg,verified
+Bykea,Lahore,Bahria Town,2026-03-18,11.59,3575.3,362.26,3213.04,https://example.com/screenshots/proof_74.jpg,verified
+InDrive,Lahore,Gulberg,2026-10-12,3.1,941.64,185.75,755.89,https://example.com/screenshots/proof_75.jpg,pending
+Bykea,Lahore,Wapda Town,2026-12-22,6.78,3288.55,596.91,2691.64,https://example.com/screenshots/proof_76.jpg,unverifiable
+InDrive,Lahore,Wapda Town,2025-06-06,10.92,6807.59,1331.12,5476.47,https://example.com/screenshots/proof_77.jpg,pending
+Uber,Lahore,Gulberg,2025-03-03,11.43,4388.62,556.94,3831.68,https://example.com/screenshots/proof_78.jpg,flagged
+Careem,Lahore,DHA,2025-03-30,11.82,8620.96,1384.65,7236.31,https://example.com/screenshots/proof_79.jpg,verified
+Uber,Lahore,Model Town,2025-08-22,7.79,5190.22,659.47,4530.75,https://example.com/screenshots/proof_80.jpg,flagged
+Uber,Lahore,DHA,2025-11-05,5.57,2956.3,572.99,2383.31,https://example.com/screenshots/proof_81.jpg,flagged
+InDrive,Lahore,DHA,2025-05-03,9.95,4410.77,801.15,3609.62,https://example.com/screenshots/proof_82.jpg,unverifiable
+Foodpanda,Lahore,Bahria Town,2026-12-29,6.89,4124.07,772.15,3351.92,https://example.com/screenshots/proof_83.jpg,pending
+InDrive,Lahore,Model Town,2026-02-18,10.71,5485.54,708.49,4777.05,https://example.com/screenshots/proof_84.jpg,pending
+Uber,Lahore,Bahria Town,2026-01-30,5.18,3905.99,572.86,3333.13,https://example.com/screenshots/proof_85.jpg,verified
+Bykea,Lahore,Bahria Town,2026-03-13,9.23,5908.21,820.58,5087.63,https://example.com/screenshots/proof_86.jpg,flagged
+Foodpanda,Lahore,DHA,2025-06-11,8.41,3208.05,473.69,2734.36,https://example.com/screenshots/proof_87.jpg,verified
+InDrive,Lahore,Johar Town,2026-07-21,4.03,2857.94,357.87,2500.07,https://example.com/screenshots/proof_88.jpg,flagged
+Careem,Lahore,Wapda Town,2025-01-24,8.84,4710.0,649.16,4060.84,https://example.com/screenshots/proof_89.jpg,unverifiable
+Uber,Lahore,Bahria Town,2026-11-19,3.8,1543.74,193.1,1350.64,https://example.com/screenshots/proof_90.jpg,pending
+Uber,Lahore,Model Town,2025-03-19,10.19,7550.88,1157.94,6392.94,https://example.com/screenshots/proof_91.jpg,unverifiable
+Bykea,Lahore,Johar Town,2026-08-29,11.38,6898.77,905.87,5992.9,https://example.com/screenshots/proof_92.jpg,pending
+Foodpanda,Lahore,DHA,2025-08-13,5.53,2185.04,326.35,1858.69,https://example.com/screenshots/proof_93.jpg,flagged
+InDrive,Lahore,Johar Town,2025-04-17,8.53,2754.43,548.66,2205.77,https://example.com/screenshots/proof_94.jpg,verified
+Bykea,Lahore,Model Town,2025-10-01,6.92,2992.73,362.48,2630.25,https://example.com/screenshots/proof_95.jpg,flagged
+Foodpanda,Lahore,DHA,2025-07-21,9.22,4348.38,761.47,3586.91,https://example.com/screenshots/proof_96.jpg,unverifiable
+Bykea,Lahore,Bahria Town,2026-07-24,5.81,3469.0,482.83,2986.17,https://example.com/screenshots/proof_97.jpg,unverifiable
+Careem,Lahore,Wapda Town,2026-01-31,4.12,1778.61,281.7,1496.91,https://example.com/screenshots/proof_98.jpg,pending
+Foodpanda,Lahore,Wapda Town,2025-06-28,6.71,5328.95,848.3,4480.65,https://example.com/screenshots/proof_99.jpg,pending
+Foodpanda,Lahore,Model Town,2026-05-09,1.12,813.63,125.08,688.55,https://example.com/screenshots/proof_100.jpg,unverifiable
