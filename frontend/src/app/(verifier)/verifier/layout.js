@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import Link from "next/link";
+import toast from "react-hot-toast";
 import { ClipboardCheck, History, LogOut, ShieldCheck } from "lucide-react";
 
 export default function VerifierLayout({ children }) {
@@ -11,6 +12,7 @@ export default function VerifierLayout({ children }) {
     localStorage.clear();
     document.cookie = "accessToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
     document.cookie = "userRole=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    toast.success("Logged out successfully");
     window.location.href = "/login";
   };
 
@@ -54,7 +56,7 @@ export default function VerifierLayout({ children }) {
             className="flex items-center gap-3 px-3 py-2.5 w-full rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
           >
             <LogOut className="w-5 h-5" />
-            Sign Out
+            Log Out
           </button>
         </div>
       </aside>
@@ -63,9 +65,7 @@ export default function VerifierLayout({ children }) {
       <div className="flex-1 overflow-hidden flex flex-col">
         <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 shrink-0">
           <h2 className="text-sm font-bold text-slate-900">Verifier Workspace</h2>
-          <div className="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center text-slate-700 font-bold text-sm border border-slate-200 cursor-pointer">
-            V1
-          </div>
+         
         </header>
         <div className="flex-1 overflow-hidden">
           {children}

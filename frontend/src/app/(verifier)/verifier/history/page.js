@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Search, Filter, Download, CheckCircle, AlertTriangle, XCircle, FileText, Loader2 } from "lucide-react";
 import { fetchHistoryShifts } from "@/services/verifier.api";
 import { exportAuditCSV } from "@/lib/exportCsv";
+import toast from "react-hot-toast";
 
 const StatusBadge = ({ status }) => {
   if (status === "Confirmed") {
@@ -32,6 +33,8 @@ export default function VerifierHistoryPage() {
   const [statusFilter, setStatusFilter] = useState("All");
   const [reviewedHistory, setReviewedHistory] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 20;
 
   useEffect(() => {
     loadHistory();
@@ -46,6 +49,7 @@ export default function VerifierHistoryPage() {
       }
     } catch (err) {
       console.error("Failed to load history");
+      toast.error("Failed to load history.");
     } finally {
       setIsLoading(false);
     }
@@ -59,6 +63,12 @@ export default function VerifierHistoryPage() {
     return matchesSearch && matchesStatus;
   });
 
+  const totalPages = Math.ceil(filteredHistory.length / itemsPerPage);
+  const paginatedHistory = filteredHistory.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
   return (
     <main className="p-8 max-w-7xl mx-auto h-full flex flex-col">
       
@@ -66,15 +76,22 @@ export default function VerifierHistoryPage() {
       <div className="flex items-center justify-between mb-8 shrink-0">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Reviewed Logs</h1>
-          <p className="text-sm text-slate-500 mt-1">Audit trail of all shift verifications processed by you.</p>
+          <p className="text-slate-500 text-sm mt-1">Audit trail of all shift verifications processed by you.</p>
         </div>
         
         <button 
-          onClick={() => exportAuditCSV(filteredHistory)}
+          onClick={() => {
+            try {
+              exportAuditCSV(filteredHistory);
+              toast.success("CSV Downloaded Successfully");
+            } catch (err) {
+              toast.error("Failed to download CSV");
+            }
+          }}
           className="flex items-center gap-2 bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 font-medium text-sm px-4 py-2 rounded-lg transition-colors shadow-sm"
         >
           <Download className="w-4 h-4" />
-          Export Audit CSV
+          Export CSV
         </button>
       </div>
 
@@ -123,13 +140,19 @@ export default function VerifierHistoryPage() {
             </thead>
             <tbody className="divide-y divide-slate-100">
               {isLoading ? (
-                <tr>
-                  <td colSpan="7" className="px-6 py-12 text-center">
-                    <Loader2 className="w-8 h-8 animate-spin text-teal-600 mx-auto" />
-                  </td>
-                </tr>
-              ) : filteredHistory.length > 0 ? (
-                filteredHistory.map((log) => (
+                [...Array(10)].map((_, i) => (
+                  <tr key={`skeleton-${i}`} className="animate-pulse">
+                    <td className="px-6 py-4"><div className="h-4 bg-slate-200 rounded w-24"></div></td>
+                    <td className="px-6 py-4"><div className="h-4 bg-slate-200 rounded w-20"></div></td>
+                    <td className="px-6 py-4"><div className="h-4 bg-slate-200 rounded w-16"></div></td>
+                    <td className="px-6 py-4"><div className="h-4 bg-slate-200 rounded w-20"></div></td>
+                    <td className="px-6 py-4"><div className="h-4 bg-slate-200 rounded w-20"></div></td>
+                    <td className="px-6 py-4"><div className="h-4 bg-slate-200 rounded w-20"></div></td>
+                    <td className="px-6 py-4"><div className="h-6 bg-slate-200 rounded-full w-24"></div></td>
+                  </tr>
+                ))
+              ) : paginatedHistory.length > 0 ? (
+                paginatedHistory.map((log) => (
                   <tr key={log._id} className="hover:bg-slate-50 transition-colors">
                     <td className="px-6 py-4 text-sm font-medium text-slate-900">{log.date}</td>
                     <td className="px-6 py-4 text-sm font-bold text-slate-700">{log.platform}</td>
@@ -155,10 +178,22 @@ export default function VerifierHistoryPage() {
         
         {/* Pagination Footer */}
         <div className="bg-slate-50 px-6 py-3 border-t border-slate-200 text-xs text-slate-500 flex justify-between items-center shrink-0">
-          <span>Showing {filteredHistory.length} of {reviewedHistory.length} total records</span>
+          <span>Showing {paginatedHistory.length} of {filteredHistory.length} total records</span>
           <div className="flex gap-1">
-            <button className="px-3 py-1 border border-slate-200 rounded hover:bg-slate-200 disabled:opacity-50" disabled>Prev</button>
-            <button className="px-3 py-1 border border-slate-200 rounded hover:bg-slate-200 disabled:opacity-50" disabled>Next</button>
+            <button 
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              className="px-3 py-1 border border-slate-200 rounded hover:bg-slate-200 disabled:opacity-50"
+            >
+              Prev
+            </button>
+            <button 
+              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages || totalPages === 0}
+              className="px-3 py-1 border border-slate-200 rounded hover:bg-slate-200 disabled:opacity-50"
+            >
+              Next
+            </button>
           </div>
         </div>
       </div>

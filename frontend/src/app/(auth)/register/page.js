@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Loader2, Briefcase, User, Mail, Lock, MapPin, Layers, Shield, Phone, FileUp } from "lucide-react";
+import toast from "react-hot-toast";
 import { authSchemas } from "../../../schemas/auth.schema";
 import { registerUser } from "../../../services/auth.api";
 import useAuthStore from "../../../store/authStore";
@@ -117,6 +118,7 @@ export default function RegisterPage() {
 
       if (user && accessToken) {
         login(user, accessToken, refreshToken);
+        toast.success("Registration successful!");
         const roleRouteMap = {
           worker: "/worker",
           verifier: "/verifier",
@@ -128,7 +130,9 @@ export default function RegisterPage() {
       setIsLoading(false);
       setError("");
     } catch (err) {
-      setError(err?.response?.data?.message || "Registration failed. Please try again.");
+      const errorMessage = err?.response?.data?.message || "Registration failed. Please try again.";
+      setError(errorMessage);
+      toast.error(errorMessage);
       setIsLoading(false);
     }
   };

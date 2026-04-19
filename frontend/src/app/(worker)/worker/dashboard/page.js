@@ -16,10 +16,13 @@ import {
   Briefcase,
   ImageIcon,
   X,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import Link from "next/link";
 
 import LogShiftModal from "./LogShiftModal";
+import toast from "react-hot-toast";
 import {
   detectAnomaly,
   fetchHistory,
@@ -105,6 +108,14 @@ export default function WorkerDashboard() {
   const [uploadError, setUploadError] = useState("");
   const [uploadSuccess, setUploadSuccess] = useState("");
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+  const totalPages = Math.ceil(shiftLogs.length / itemsPerPage);
+  const paginatedLogs = shiftLogs.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
   useEffect(() => {
     // Fetch History Data
     const loadData = async () => {
@@ -129,6 +140,7 @@ export default function WorkerDashboard() {
   const handleShiftAdded = (newShift) => {
     // Add the new shift at the top of the table locally
     setShiftLogs((prev) => [newShift, ...prev]);
+    toast.success("Shift logged successfully!");
 
     const earningId =
       newShift?.data?._id ||
@@ -178,16 +190,21 @@ export default function WorkerDashboard() {
     setUploadSuccess("");
 
     if (!file.name.endsWith(".csv")) {
-      setUploadError("Please upload a valid CSV file.");
+      const msg = "Please upload a valid CSV file.";
+      setUploadError(msg);
+      toast.error(msg);
       return;
     }
 
+    const toastId = toast.loading("Uploading file, please wait...");
     try {
       setUploadSuccess("Uploading file, please wait...");
 
       const response = await bulkUploadEarnings(file);
 
-      setUploadSuccess(`Success: ${response.message || "File uploaded."}`);
+      const successMsg = `Success: ${response.message || "File uploaded."}`;
+      setUploadSuccess(successMsg);
+      toast.success("File uploaded successfully!", { id: toastId });
 
       // Refresh history logic to see new entries immediately
       const res = await fetchHistory();
@@ -197,11 +214,11 @@ export default function WorkerDashboard() {
         setShiftLogs(res);
       }
     } catch (error) {
-      setUploadError(
-        error?.response?.data?.detail ||
+      const errorMsg = error?.response?.data?.detail ||
           error.message ||
-          "Something went wrong while uploading the file.",
-      );
+          "Something went wrong while uploading the file.";
+      setUploadError(errorMsg);
+      toast.error(errorMsg, { id: toastId });
       setUploadSuccess(""); // clear the uploading message
     }
 
@@ -290,7 +307,7 @@ export default function WorkerDashboard() {
 
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-slate-900 mb-1">
-            Good morning, Ali 👋
+            Good morning
           </h1>
           <p className="text-sm text-slate-500">
             Here is your earnings overview for this week.
@@ -402,7 +419,7 @@ export default function WorkerDashboard() {
                 ) : shiftLogs.length === 0 ? (
                   <tr>
                     <td
-                      colSpan="8"
+                  paginatedLogs
                       className="px-6 py-8 text-center text-sm text-slate-500"
                     >
                       No shift records found. Submit your first shift log using
@@ -468,15 +485,15 @@ export default function WorkerDashboard() {
                         </span>
                       </td>
                       <td className="px-6 py-4">
-                        {log.screenshot_url ? (
+                        {log.screenshot || log.screenshot_url ? (
                           <button
-                            onClick={() => setSelectedImage(log.screenshot_url)}
+                            onClick={() => setSelectedImage(log.screenshot || log.screenshot_url)}
                             className="relative block w-10 h-10 rounded-md overflow-hidden border border-slate-200 hover:ring-2 hover:ring-teal-500 transition-all group shrink-0"
                             title="View Screenshot"
                           >
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
-                              src={log.screenshot_url}
+                              src={log.screenshot || log.screenshot_url}
                               alt="Proof copy"
                               className="w-full h-full object-cover"
                             />
@@ -496,6 +513,30 @@ export default function WorkerDashboard() {
               </tbody>
             </table>
           </div>
+
+          {totalPages > 1 && (
+            <div className="px-6 py-4 border-t border-slate-200 flex justify-between items-center bg-slate-50 rounded-b-xl">
+              <button
+                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+                className="flex items-center gap-1.5 px-4 py-2 border border-slate-200 bg-white rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
+              >
+                <ChevronLeft className="w-4 h-4" />
+                Previous
+              </button>
+              <span className="text-sm font-medium text-slate-600">
+                Page {currentPage} of {totalPages}
+              </span>
+              <button
+                onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                disabled={currentPage === totalPages}
+                className="flex items-center gap-1.5 px-4 py-2 border border-slate-200 bg-white rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
+              >
+                Next
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Full Image Lightbox Modal */}

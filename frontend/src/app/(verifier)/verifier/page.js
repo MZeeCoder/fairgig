@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Loader2, CheckCircle, AlertTriangle, XCircle, Search, Calendar, Clock, DollarSign, ShieldCheck } from "lucide-react";
 import { fetchPendingShifts, updateShiftStatus } from "@/services/verifier.api";
+import toast from "react-hot-toast";
 
 export default function VerifierQueuePage() {
   const [queue, setQueue] = useState([]);
@@ -33,6 +34,7 @@ export default function VerifierQueuePage() {
   const handleAction = async (status) => {
     if (!selectedShift) return;
     setActionLoading(status);
+    const toastId = toast.loading(`Marking as ${status}...`);
 
     try {
       await updateShiftStatus(selectedShift.id, status);
@@ -44,9 +46,9 @@ export default function VerifierQueuePage() {
       const updatedQueue = queue.filter(s => s.id !== selectedShift.id);
       setQueue(updatedQueue);
       setSelectedShift(updatedQueue.length > 0 ? updatedQueue[0] : null);
-
+      toast.success(`Marked as ${status}`, { id: toastId });
     } catch (err) {
-      alert("Action failed. Try again.");
+      toast.error("Action failed. Try again.", { id: toastId });
     } finally {
       setActionLoading(null);
     }
@@ -74,7 +76,17 @@ export default function VerifierQueuePage() {
 
         <div className="flex-1 overflow-y-auto p-3 space-y-2">
           {isLoading ? (
-            <div className="flex justify-center p-8"><Loader2 className="w-6 h-6 animate-spin text-teal-600" /></div>
+            <div className="space-y-2">
+              {[...Array(5)].map((_, i) => (
+                <div key={i} className="p-4 rounded-xl border border-slate-200 bg-white animate-pulse">
+                  <div className="flex justify-between items-start mb-3">
+                    <div className="h-4 bg-slate-200 rounded w-24"></div>
+                    <div className="h-6 bg-slate-200 rounded-md w-16"></div>
+                  </div>
+                  <div className="h-3 bg-slate-200 rounded w-20 flex items-center gap-1.5 mt-1"></div>
+                </div>
+              ))}
+            </div>
           ) : queue.length === 0 ? (
             <div className="text-center p-8 text-slate-500 text-sm">Queue is empty! Great job.</div>
           ) : (

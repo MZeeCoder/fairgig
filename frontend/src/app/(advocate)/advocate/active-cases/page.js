@@ -1,8 +1,24 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Loader2, ShieldAlert, MessageSquare, CheckCircle, Clock } from "lucide-react";
-import { fetchGrievances, resolveGrievance, getComplaintById } from "@/services/advocate.api";
+import { Loader2, ShieldAlert, MessageSquare, CheckCircle, Clock, TrendingUp, MapPin } from "lucide-react";
+import toast from "react-hot-toast";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
+import { fetchGrievances, resolveGrievance, fetchCommissionTrend, fetchVolatility, getComplaintById } from "@/services/advocate.api";
+
+const CustomTooltip = ({ active, payload, label }) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-white p-3 rounded-lg shadow-md border border-slate-100 flex flex-col gap-1">
+        <p className="text-slate-500 font-medium text-xs">{label}</p>
+        <p className="font-bold text-slate-800 text-sm">
+          PKR {payload[0].value.toLocaleString()}
+        </p>
+      </div>
+    );
+  }
+  return null;
+};
 
 export default function AdvocateDashboard() {
   const [cases, setCases] = useState([]);
@@ -10,10 +26,17 @@ export default function AdvocateDashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [advocateNotes, setAdvocateNotes] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  const [platformConfig, setPlatformConfig] = useState("Uber");
+  const [cityConfig, setCityConfig] = useState("Lahore");
+  const [trendData, setTrendData] = useState([]);
+  const [cityData, setCityData] = useState([]);
 
   useEffect(() => {
     loadCases();
+   
   }, []);
+
+ 
 
   const loadCases = async () => {
     setIsLoading(true);
@@ -43,17 +66,23 @@ export default function AdvocateDashboard() {
   const handleUpdateStatus = async (newStatus) => {
     if (!selectedCase) return;
     setIsSaving(true);
+    const toastId = toast.loading("Updating case status...");
     
-    await resolveGrievance(selectedCase.id, newStatus, advocateNotes);
-    
-    // Update local state
-    const updatedCases = cases.map(c => 
-      c.id === selectedCase.id ? { ...c, status: newStatus, notes: advocateNotes } : c
-    );
-    setCases(updatedCases);
-    setSelectedCase({ ...selectedCase, status: newStatus, notes: advocateNotes });
-    
-    setIsSaving(false);
+    try {
+      await resolveGrievance(selectedCase.id, newStatus, advocateNotes);
+      
+      // Update local state
+      const updatedCases = cases.map(c => 
+        c.id === selectedCase.id ? { ...c, status: newStatus, notes: advocateNotes } : c
+      );
+      setCases(updatedCases);
+      setSelectedCase({ ...selectedCase, status: newStatus, notes: advocateNotes });
+      toast.success("Case status updated dynamically!", { id: toastId });
+    } catch (error) {
+      toast.error("Failed to update case status.", { id: toastId });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -68,7 +97,18 @@ export default function AdvocateDashboard() {
 
         <div className="flex-1 overflow-y-auto p-3 space-y-2 bg-slate-50">
           {isLoading ? (
-            <div className="flex justify-center p-8"><Loader2 className="w-6 h-6 animate-spin text-teal-600" /></div>
+            <div className="space-y-3">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <div key={i} className="p-4 rounded-xl border border-slate-200 bg-white animate-pulse">
+                  <div className="flex justify-between items-start mb-3">
+                    <div className="h-4 bg-slate-200 rounded w-16"></div>
+                    <div className="h-5 bg-slate-200 rounded-full w-20"></div>
+                  </div>
+                  <div className="h-4 bg-slate-200 rounded w-3/4 mb-2"></div>
+                  <div className="h-3 bg-slate-200 rounded w-1/2 mt-1"></div>
+                </div>
+              ))}
+            </div>
           ) : cases.map((c) => (
             <div 
               key={c.id}
@@ -98,9 +138,7 @@ export default function AdvocateDashboard() {
 
       {/* Right Column: Case Workspace */}
       <div className="flex-1 overflow-y-auto p-8 bg-slate-50">
-        {!selectedCase ? (
-          <div className="h-full flex items-center justify-center text-slate-400">Select a case to review</div>
-        ) : (
+        {selectedCase && (
           <div className="max-w-3xl mx-auto space-y-6">
             
             {/* Header */}
