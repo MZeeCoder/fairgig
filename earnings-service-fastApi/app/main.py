@@ -32,3 +32,8 @@ app.add_middleware(
 )
 
 app.include_router(earnings_router)
+
+@app.get("/")
+async def root():
+    return {"message": "Earnings Service running"}
+
